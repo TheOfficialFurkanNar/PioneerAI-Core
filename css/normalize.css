@@ -1,0 +1,56 @@
+/* css/reset.css */
+/* Örnek: normalize.css’tan en temel bölümler */
+html {
+  line-height: 1.15; /* 1 */
+  -webkit-text-size-adjust: 100%; /* 2 */
+}
+
+/* Vücut */
+body {
+  margin: 0;
+}
+
+/* Görünür fark yaratan başlık düzeltmeleri */
+article,
+aside,
+footer,
+header,
+nav,
+section,
+main {
+  display: block;
+}
+
+/* Kalın/yatık etiketler */
+strong {
+  font-weight: bold;
+}
+em {
+  font-style: italic;
+}
+
+/* Listeler */
+ol,
+ul {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+/* Bağlantılar */
+a {
+  background-color: transparent;
+  text-decoration: none;
+}
+
+/* Tüm form öğeleri */
+button,
+input,
+optgroup,
+select,
+textarea {
+  margin: 0;
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+}
