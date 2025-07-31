@@ -1,11 +1,67 @@
 <!DOCTYPE html>
-
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html lang="tr">
 <head>
     <meta charset="utf-8" />
-    <title></title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PioneerAI Kayıt</title>
+    <link rel="stylesheet" href="../css/style.css" />
 </head>
 <body>
+    <div class="register-container">
+        <form id="registerForm" novalidate>
+            <h2>Kayıt Ol</h2>
 
+            <!-- Kullanıcı Adı -->
+            <div class="form-group">
+                <label for="regUname">Kullanıcı Adı</label>
+                <input
+                    type="text"
+                    id="regUname"
+                    name="username"
+                    placeholder="Kullanıcı Adı"
+                    required
+                />
+                <small class="error-message" id="regUnameError"></small>
+            </div>
+
+            <!-- E-posta -->
+            <div class="form-group">
+                <label for="regEmail">E-posta</label>
+                <input
+                    type="email"
+                    id="regEmail"
+                    name="email"
+                    placeholder="E-posta adresiniz"
+                    required
+                />
+                <small class="error-message" id="regEmailError"></small>
+            </div>
+
+            <!-- Parola -->
+            <div class="form-group">
+                <label for="regPwd">Parola</label>
+                <input
+                    type="password"
+                    id="regPwd"
+                    name="password"
+                    placeholder="Şifre (min 8 karakter)"
+                    required
+                    minlength="8"
+                />
+                <small class="error-message" id="regPwdError"></small>
+            </div>
+
+            <!-- Kayıt Butonu -->
+            <button type="submit" id="registerBtn">Kayıt Ol</button>
+            <small class="server-error" id="regServerError"></small>
+
+            <!-- Giriş Bağlantısı -->
+            <p class="login-text">
+                Zaten bir hesabın var mı?
+                <a href="login.html">Giriş Yap</a>
+            </p>
+        </form>
+    </div>
+    <script type="module" src="../js/registry.js"></script>
 </body>
 </html>

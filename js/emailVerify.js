@@ -1,4 +1,4 @@
-// js/emailVerify.js
+// js/emailVerify.js (Refactored & Enhanced)
 import { postJSON } from "./api.js";
 
 const sendBtn    = document.getElementById("sendBtn");
@@ -6,6 +6,9 @@ const emailInput = document.getElementById("emailInput");
 const statusEl   = document.getElementById("emailStatus");
 const codeZone   = document.getElementById("codeZone");
 const ENDPOINT   = "http://localhost:5000/send-code";
+
+// Accessibility: Announce status updates
+if (statusEl) statusEl.setAttribute("aria-live", "polite");
 
 /**
  * E-posta formatını kontrol eder.
@@ -23,6 +26,8 @@ function validateEmail(email) {
  * Doğrulama kodu gönderme akışını yönetir.
  */
 async function sendVerificationCode() {
+  if (!sendBtn || !emailInput || !statusEl || !codeZone) return; // Robustness
+
   statusEl.textContent = "";
   codeZone.style.display = "none";
 
@@ -30,6 +35,7 @@ async function sendVerificationCode() {
   const error = validateEmail(email);
   if (error) {
     statusEl.textContent = error;
+    emailInput.focus();
     return;
   }
 
@@ -41,6 +47,9 @@ async function sendVerificationCode() {
     if (data.status === "success") {
       statusEl.textContent = "✔ Kod gönderildi!";
       codeZone.style.display = "block";
+      // Optionally, focus first input in codeZone
+      const codeInput = codeZone.querySelector("input");
+      if (codeInput) codeInput.focus();
     } else {
       statusEl.textContent = "✖ Kod gönderilemedi. Lütfen tekrar deneyin.";
     }
@@ -56,6 +65,16 @@ async function sendVerificationCode() {
   }
 }
 
-sendBtn.addEventListener("click", sendVerificationCode);
+// Support pressing Enter to send
+if (emailInput) {
+  emailInput.addEventListener("keydown", e => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      sendVerificationCode();
+    }
+  });
+}
+
+if (sendBtn) sendBtn.addEventListener("click", sendVerificationCode);
 
 export { validateEmail, sendVerificationCode };

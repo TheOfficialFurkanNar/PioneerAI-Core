@@ -1,2 +1,3 @@
-# data/__init__.py
-DATA_PATH = "data/"
+from pathlib import Path
+
+DATA_PATH = str(Path(__file__).parent)

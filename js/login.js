@@ -1,33 +1,68 @@
+// login.js (Refactored & Enhanced)
+
+// Utility for safe DOM updates
+function setSafeText(id, value, fallback = "") {
+    const el = document.getElementById(id);
+    if (el) el.innerText = value || fallback;
+}
+
+// Main login function
 function loginUser() {
-    const username = document.getElementById("uname").value.trim();
-    const password = document.getElementById("pwd").value.trim();
+    const username = document.getElementById("uname")?.value.trim();
+    const password = document.getElementById("pwd")?.value.trim();
+    const statusEl = document.getElementById("status");
+
+    // Accessibility: Announce status updates
+    if (statusEl) statusEl.setAttribute("aria-live", "polite");
 
     if (!username || !password) {
-        document.getElementById("status").innerText = "Lütfen tüm alanları doldurun!";
+        setSafeText("status", "Lütfen tüm alanları doldurun!");
         return;
     }
+
+    setSafeText("status", "Giriş yapılıyor...");
 
     fetch("http://localhost:5000/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password })
     })
-        .then(res => res.json())
+        .then(res => {
+            if (!res.ok) throw new Error("Yanıt alınamadı");
+            return res.json();
+        })
         .then(data => {
             if (data.api_key) {
-                document.getElementById("status").innerText =
-                    "? Giriş başarılı! API Anahtarınız: " + data.api_key;
-
-                // Anahtarı saklama (İsteğe bağlı)
+                setSafeText("status", `✅ Giriş başarılı! API Anahtarınız: ${data.api_key}`);
                 localStorage.setItem("api_key", data.api_key);
+                // Optionally redirect to dashboard
+                setTimeout(() => {
+                    window.location.href = "../html/dashboard.html";
+                }, 1200);
             } else if (data.error) {
-                document.getElementById("status").innerText = "?? " + data.error;
+                setSafeText("status", `❌ ${data.error}`);
             } else {
-                document.getElementById("status").innerText = "? Giriş başarısız!";
+                setSafeText("status", "❔ Giriş başarısız!");
             }
         })
         .catch(err => {
             console.error("Hata:", err);
-            document.getElementById("status").innerText = "? Sunucuya ulaşılamadı.";
+            setSafeText("status", "⚠️ Sunucuya ulaşılamadı.");
         });
+}
+
+// Support pressing Enter in password field to trigger login
+const pwdInput = document.getElementById("pwd");
+if (pwdInput) {
+    pwdInput.addEventListener("keydown", e => {
+        if (e.key === "Enter") {
+            loginUser();
+        }
+    });
+}
+
+// Attach login function to button
+const loginBtn = document.getElementById("loginBtn");
+if (loginBtn) {
+    loginBtn.addEventListener("click", loginUser);
 }

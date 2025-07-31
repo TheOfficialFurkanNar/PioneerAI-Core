@@ -1,41 +1,59 @@
-// app.js
+// app.js (Improved Version)
 
-// Sabitler
+// Constants
 const MAX_HISTORY = 50;
 
 const chatBox = document.getElementById("chat-box");
 const inputField = document.getElementById("input-field");
 const sendBtn = document.getElementById("send-btn");
 
-// Mesajları DOM'a ekler
-function addMessage(sender, text) {
+// Utility to create timestamps
+function formatTimestamp(date = new Date()) {
+    return date.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+}
+
+// Add message to chat window, supports timestamp and ARIA live region
+function addMessage(sender, text, timestamp = formatTimestamp()) {
     const messageDiv = document.createElement("div");
     messageDiv.classList.add("message", sender === "user" ? "user-message" : "bot-message");
-    messageDiv.textContent = text;
+    messageDiv.setAttribute("role", "listitem");
+
+    // Message content
+    const textSpan = document.createElement("span");
+    textSpan.className = "message-text";
+    textSpan.textContent = text;
+
+    // Timestamp
+    const timeSpan = document.createElement("span");
+    timeSpan.className = "message-time";
+    timeSpan.textContent = ` ${timestamp}`;
+
+    messageDiv.appendChild(textSpan);
+    messageDiv.appendChild(timeSpan);
     chatBox.appendChild(messageDiv);
     chatBox.scrollTop = chatBox.scrollHeight;
 }
 
-// LocalStorage'dan geçmişi yükler
+// Load chat history from localStorage
 function loadMemory() {
     try {
         const history = JSON.parse(localStorage.getItem("chat_history")) || [];
-        if (!Array.isArray(history)) throw new Error("Hafıza formatı yanlış!");
+        if (!Array.isArray(history)) throw new Error("Invalid history format!");
         const limitedHistory = history.slice(-MAX_HISTORY);
 
         limitedHistory.forEach(entry => {
             if (entry.user && entry.bot) {
-                addMessage("user", entry.user);
-                addMessage("bot", entry.bot);
+                addMessage("user", entry.user, entry.userTime || undefined);
+                addMessage("bot", entry.bot, entry.botTime || undefined);
             }
         });
     } catch (e) {
-        console.warn("Yerel hafıza okunamadı veya bozuk. Sıfırlanıyor.", e);
+        console.warn("Local history could not be read or is corrupted. Resetting.", e);
         localStorage.removeItem("chat_history");
     }
 }
 
-// LocalStorage'a mesaj kaydeder, maksimum kayıt sınırını kontrol eder
+// Save new message pair to localStorage, including timestamps
 function saveToMemory(userMsg, botReply) {
     try {
         let history = JSON.parse(localStorage.getItem("chat_history")) || [];
@@ -45,24 +63,48 @@ function saveToMemory(userMsg, botReply) {
             history.shift();
         }
 
-        history.push({ user: userMsg, bot: botReply });
+        history.push({
+            user: userMsg,
+            bot: botReply,
+            userTime: formatTimestamp(),
+            botTime: formatTimestamp()
+        });
         localStorage.setItem("chat_history", JSON.stringify(history));
     } catch (e) {
-        console.warn("Yerel hafıza kaydedilemedi:", e);
+        console.warn("Could not save to local history:", e);
     }
 }
 
-// API'ye mesaj gönderir ve yanıtı alır
+// Display a loading indicator for bot response
+function showLoading() {
+    const loadingDiv = document.createElement("div");
+    loadingDiv.classList.add("message", "bot-message", "loading-indicator");
+    loadingDiv.setAttribute("role", "listitem");
+    loadingDiv.textContent = "Yanıt bekleniyor...";
+    chatBox.appendChild(loadingDiv);
+    chatBox.scrollTop = chatBox.scrollHeight;
+    return loadingDiv;
+}
+
+// Remove loading indicator
+function removeLoading(loadingDiv) {
+    if (loadingDiv && loadingDiv.parentNode) {
+        loadingDiv.parentNode.removeChild(loadingDiv);
+    }
+}
+
+// Send message to API and handle response
 async function sendMessage() {
     const userMsg = inputField.value.trim();
     if (!userMsg) return;
 
-    // Kullanıcı mesajını ekle ve input'u temizle
+    // Add user message and clear input
     addMessage("user", userMsg);
     inputField.value = "";
     inputField.disabled = true;
     sendBtn.disabled = true;
 
+    const loadingDiv = showLoading();
     const t0 = performance.now();
 
     try {
@@ -76,15 +118,21 @@ async function sendMessage() {
 
         const data = await response.json();
 
-        const botReply = (data && typeof data.response === "string")
+        removeLoading(loadingDiv);
+
+        // Basic sanitization: prevent XSS if bot replies could contain HTML
+        const reply = document.createElement("div");
+        reply.textContent = (data && typeof data.response === "string")
             ? data.response
             : "⚠️ Yanıt alınamadı.";
 
-        addMessage("bot", botReply);
-        saveToMemory(userMsg, botReply);
+        addMessage("bot", reply.textContent);
+
+        saveToMemory(userMsg, reply.textContent);
 
     } catch (error) {
-        console.error("API isteği başarısız:", error);
+        console.error("API request failed:", error);
+        removeLoading(loadingDiv);
         addMessage("bot", "⚠️ Sunucuya ulaşılamadı.");
     }
 
@@ -96,7 +144,7 @@ async function sendMessage() {
     inputField.focus();
 }
 
-// Klavye dinleyicisi (Enter gönder, Shift+Enter yeni satır)
+// Keyboard listener: Enter to send, Shift+Enter for newline
 inputField.addEventListener("keydown", (e) => {
     if (e.key === "Enter" && !e.shiftKey) {
         e.preventDefault();
@@ -104,11 +152,15 @@ inputField.addEventListener("keydown", (e) => {
     }
 });
 
-// Buton dinleyicisi
+// Button listener
 sendBtn.addEventListener("click", sendMessage);
 
-// Sayfa yüklendiğinde hafızayı yükle ve inputa odaklan
+// Load memory and focus input on page load
 window.addEventListener("DOMContentLoaded", () => {
+    // Set ARIA live region for chat box
+    chatBox.setAttribute("role", "list");
+    chatBox.setAttribute("aria-live", "polite");
+
     loadMemory();
     inputField.focus();
 });
