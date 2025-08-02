@@ -1,2 +1,14 @@
-Python 3.10+
-Libraries: NumPy, Pandas, Matplotlib, Scikit-learn
+# Replace your current requirements.txt with:
+openai>=1.35.0
+tiktoken>=0.5.2
+fastapi>=0.104.1
+uvicorn>=0.24.0
+python-dotenv>=1.0.1
+aiofiles>=23.2.1
+pydantic>=2.5.0
+numpy>=1.26.0
+pandas>=2.1.0
+matplotlib>=3.8.0
+scikit-learn>=1.3.0
+asyncio-mqtt>=0.16.1
+websockets>=12.0

@@ -11,7 +11,7 @@ from modules.memory_manager import (
     get_cache,
     set_cache
 )
-from utils.token_counter import count_tokens
+from modules.token_counter import count_tokens
 from utils.cache_manager import async_ttl_cache
 from config.settings import MAX_CONTEXT_TOKENS, MODEL_NAME, SYSTEM_PROMPT
 
