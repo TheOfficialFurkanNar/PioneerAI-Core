@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">  <!-- For responsive design -->
     <title>PioneerAI Panel</title>
-    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
     <div class="dashboard-container">
@@ -20,7 +20,10 @@
                 <p><strong>E-Posta Durumu:</strong> <span id="emailStatus">[E-Posta Durumu Yükleniyor...]</span></p>  <!-- Loading Placeholder -->
                 <p><strong>Son Giriş:</strong> <span id="lastLogin">[Son Giriş Tarihi Yükleniyor...]</span></p>  <!-- Loading Placeholder -->
 
-                <button onclick="logout()">Çıkış Yap</button>
+                <div class="dashboard-actions">
+                    <button onclick="goToChat()">Sohbete Git</button>
+                    <button onclick="logout()">Çıkış Yap</button>
+                </div>
             </div>
         </main>
 
@@ -29,6 +32,6 @@
         </footer>
     </div>
 
-    <script src="../js/dashboard.js"></script>
+    <script src="/js/dashboard.js"></script>
 </body>
 </html>
