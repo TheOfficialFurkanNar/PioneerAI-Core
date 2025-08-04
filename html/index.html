@@ -4,12 +4,18 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>PioneerChat 🧠</title>
-  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="/css/style.css" />
 </head>
 <body>
   <div class="container">
     <main>
       <h2>PioneerChat 🧠</h2>
+
+      <!-- Navigation Bar -->
+      <div class="nav-bar" id="navBar" style="display: none;">
+        <button onclick="goToDashboard()">Dashboard</button>
+        <button onclick="logout()">Çıkış Yap</button>
+      </div>
 
       <!-- Sohbet Kutusu -->
       <div id="chatWindow" class="chat-box" aria-live="polite"></div>  <!-- aria-live for accessibility -->
@@ -44,6 +50,6 @@
   </div>
 
   <!-- PioneerChat Modülü -->
-  <script type="module" src="js/pioneer.js"></script>
+  <script type="module" src="/js/pioneer.js"></script>
 </body>
 </html>

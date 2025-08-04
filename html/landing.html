@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PioneerAI - Hoş Geldiniz</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="landing-container">
+        <header>
+            <h1>PioneerAI'ya Hoş Geldiniz 🧠</h1>
+            <p>Yapay zeka destekli sohbet deneyiminiz başlıyor...</p>
+        </header>
+        
+        <main>
+            <div class="landing-box">
+                <div id="loadingMessage">
+                    <p>Yönlendiriliyorsunuz...</p>
+                    <div class="loading-spinner"></div>
+                </div>
+                
+                <div id="authOptions" style="display: none;">
+                    <h2>Devam etmek için giriş yapın</h2>
+                    <div class="auth-buttons">
+                        <a href="login.html" class="btn btn-primary">Giriş Yap</a>
+                        <a href="registry.html" class="btn btn-secondary">Kayıt Ol</a>
+                    </div>
+                </div>
+            </div>
+        </main>
+        
+        <footer>
+            <p>&copy; 2024 PioneerAI</p>
+        </footer>
+    </div>
+    
+    <script>
+        // Check authentication and redirect appropriately
+        const AUTH_TOKEN_KEY = "auth_token";
+        
+        function isAuthenticated() {
+            const token = localStorage.getItem(AUTH_TOKEN_KEY);
+            return token !== null && token !== "";
+        }
+        
+        document.addEventListener("DOMContentLoaded", () => {
+            const loadingMessage = document.getElementById("loadingMessage");
+            const authOptions = document.getElementById("authOptions");
+            
+            setTimeout(() => {
+                if (isAuthenticated()) {
+                    // Redirect to dashboard if authenticated
+                    window.location.replace("dashboard.html");
+                } else {
+                    // Show auth options if not authenticated
+                    loadingMessage.style.display = "none";
+                    authOptions.style.display = "block";
+                }
+            }, 1500);
+        });
+    </script>
+</body>
+</html>
