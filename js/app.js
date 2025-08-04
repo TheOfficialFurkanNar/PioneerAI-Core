@@ -1,7 +1,9 @@
-// app.js (Improved Version)
+// app.js (Improved Version 2)
 
 // Constants
 const MAX_HISTORY = 50;
+const API_ENDPOINT = "/api/v1/ask"; // Configuration variable
+const AUTH_TOKEN_KEY = 'authToken'; //Key for auth token in local storage
 
 const chatBox = document.getElementById("chat-box");
 const inputField = document.getElementById("input-field");
@@ -98,7 +100,6 @@ async function sendMessage() {
     const userMsg = inputField.value.trim();
     if (!userMsg) return;
 
-    // Add user message and clear input
     addMessage("user", userMsg);
     inputField.value = "";
     inputField.disabled = true;
@@ -108,40 +109,76 @@ async function sendMessage() {
     const t0 = performance.now();
 
     try {
-        const response = await fetch("/api/v1/ask", {
+        const token = localStorage.getItem(AUTH_TOKEN_KEY); // Retrieve token
+        if (!token) {
+            throw new Error("Authentication token not found. Please log in.");
+        }
+
+        const response = await fetch(API_ENDPOINT, {
             method: "POST",
             headers: {
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}` // Add the token
             },
             body: JSON.stringify({ user_message: userMsg })
         });
+
+        if (!response.ok) {
+            const errorData = await response.json(); // Try to get error details
+            let errorMessage = errorData.detail || `Server returned status code: ${response.status}`;
+
+            //Custom error messages based on status codes (example)
+            if (response.status === 401) {
+                errorMessage = "Yetkilendirme hatası. Lütfen tekrar giriş yapın."; //Authorization error. Please log in again.
+            } else if (response.status === 400) {
+                errorMessage = "Geçersiz istek. Lütfen mesajınızı kontrol edin."; //Invalid request. Please check your message.
+            }
+
+            throw new Error(errorMessage);
+        }
 
         const data = await response.json();
 
         removeLoading(loadingDiv);
 
-        // Basic sanitization: prevent XSS if bot replies could contain HTML
         const reply = document.createElement("div");
+        //Consider sanitizing data.response here if you are not doing it on the backend
         reply.textContent = (data && typeof data.response === "string")
             ? data.response
             : "⚠️ Yanıt alınamadı.";
 
         addMessage("bot", reply.textContent);
-
         saveToMemory(userMsg, reply.textContent);
 
     } catch (error) {
         console.error("API request failed:", error);
         removeLoading(loadingDiv);
-        addMessage("bot", "⚠️ Sunucuya ulaşılamadı.");
+
+        //User-friendly error messages
+        let displayError = "⚠️ Bir hata oluştu. Lütfen tekrar deneyin."; //An error occurred. Please try again.
+        if (error.message.includes("Authentication token not found")) {
+            displayError = "Lütfen giriş yapın."; //Please log in.
+        } else if (error.message.includes("Yetkilendirme hatası")) {
+            displayError = "Oturumunuz sona erdi. Lütfen tekrar giriş yapın."; //Your session has expired. Please log in again.
+        } else {
+            displayError = `⚠️ Sunucuya ulaşılamadı: ${error.message}`; //Server unreachable:
+        }
+        addMessage("bot", displayError);
+
+        //If authentication fails, you might want to redirect to the login page
+        if (error.message.includes("Authentication token not found") || error.message.includes("Yetkilendirme hatası")) {
+            //Redirect to login page (adjust the path as needed)
+            window.location.href = "login.html";
+        }
+
+    } finally {
+        const t1 = performance.now();
+        console.log(`Yanıt süresi: ${(t1 - t0).toFixed(2)} ms`);
+
+        inputField.disabled = false;
+        sendBtn.disabled = false;
+        inputField.focus();
     }
-
-    const t1 = performance.now();
-    console.log(`Yanıt süresi: ${(t1 - t0).toFixed(2)} ms`);
-
-    inputField.disabled = false;
-    sendBtn.disabled = false;
-    inputField.focus();
 }
 
 // Keyboard listener: Enter to send, Shift+Enter for newline

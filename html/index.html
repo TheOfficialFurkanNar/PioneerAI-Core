@@ -8,35 +8,39 @@
 </head>
 <body>
   <div class="container">
-    <h2>PioneerChat 🧠</h2>
+    <main>
+      <h2>PioneerChat 🧠</h2>
 
-    <!-- Sohbet Kutusu -->
-    <div id="chatWindow" class="chat-box"></div>
+      <!-- Sohbet Kutusu -->
+      <div id="chatWindow" class="chat-box" aria-live="polite"></div>  <!-- aria-live for accessibility -->
 
-    <!-- Kontrol Paneli -->
-    <div class="controls">
-      <label for="summaryStyle">Özet Stili:</label>
-      <select id="summaryStyle">
-        <option value="brief">Kısa Özet</option>
-        <option value="deep">Derinlemesine</option>
-        <option value="bullet">Madde Madde</option>
-        <option value="technical">Teknik</option>
-        <option value="story">Hikâye</option>
-      </select>
+      <!-- Kontrol Paneli -->
+      <div class="controls">
+        <label for="summaryStyle">Özet Stili:</label>
+        <select id="summaryStyle">
+          <option value="brief">Kısa Özet</option>
+          <option value="deep">Derinlemesine</option>
+          <option value="bullet">Madde Madde</option>
+          <option value="technical">Teknik</option>
+          <option value="story">Hikâye</option>
+        </select>
 
-      <label for="streamToggle">
-        <input type="checkbox" id="streamToggle" />
-        Akışlı Mod
-      </label>
-    </div>
+        <label for="streamToggle">
+          <input type="checkbox" id="streamToggle" />
+          Akışlı Mod
+        </label>
+      </div>
 
-    <!-- Giriş Alanı ve Buton -->
-    <textarea
-      id="userInput"
-      rows="2"
-      placeholder="Mesajınızı yazın ve Enter’a basın..."
-    ></textarea>
-    <button id="sendBtn">Gönder</button>
+      <!-- Giriş Alanı ve Buton -->
+      <form id="chatForm">
+        <textarea
+          id="userInput"
+          rows="2"
+          placeholder="Mesajınızı yazın ve Enter’a basın..."
+        ></textarea>
+        <button id="sendBtn" type="submit">Gönder</button>
+      </form>
+    </main>
   </div>
 
   <!-- PioneerChat Modülü -->

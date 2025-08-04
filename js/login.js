@@ -1,4 +1,7 @@
-// login.js (Refactored & Enhanced)
+// login.js (Refactored & Enhanced - COOKIE BASED)
+
+const API_ENDPOINT_LOGIN = "http://localhost:5000/login"; // Configuration
+const DASHBOARD_URL = "../html/dashboard.html";
 
 // Utility for safe DOM updates
 function setSafeText(id, value, fallback = "") {
@@ -7,10 +10,11 @@ function setSafeText(id, value, fallback = "") {
 }
 
 // Main login function
-function loginUser() {
+async function loginUser() {
     const username = document.getElementById("uname")?.value.trim();
     const password = document.getElementById("pwd")?.value.trim();
     const statusEl = document.getElementById("status");
+    const loginBtn = document.getElementById("loginBtn"); //Disable button while loading
 
     // Accessibility: Announce status updates
     if (statusEl) statusEl.setAttribute("aria-live", "polite");
@@ -21,34 +25,43 @@ function loginUser() {
     }
 
     setSafeText("status", "Giriş yapılıyor...");
+    if (loginBtn) loginBtn.disabled = true;
 
-    fetch("http://localhost:5000/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password })
-    })
-        .then(res => {
-            if (!res.ok) throw new Error("Yanıt alınamadı");
-            return res.json();
-        })
-        .then(data => {
-            if (data.api_key) {
-                setSafeText("status", `✅ Giriş başarılı! API Anahtarınız: ${data.api_key}`);
-                localStorage.setItem("api_key", data.api_key);
-                // Optionally redirect to dashboard
-                setTimeout(() => {
-                    window.location.href = "../html/dashboard.html";
-                }, 1200);
-            } else if (data.error) {
-                setSafeText("status", `❌ ${data.error}`);
-            } else {
-                setSafeText("status", "❔ Giriş başarısız!");
-            }
-        })
-        .catch(err => {
-            console.error("Hata:", err);
-            setSafeText("status", "⚠️ Sunucuya ulaşılamadı.");
+    try {
+        const response = await fetch(API_ENDPOINT_LOGIN, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ username, password })
         });
+
+        if (!response.ok) {
+            let message = `Giriş başarısız. Hata kodu: ${response.status}`;
+            if(response.status === 401 || response.status === 403) {
+                message = "Kullanıcı adı veya şifre hatalı.";
+            }
+            throw new Error(message);
+        }
+
+        const data = await response.json();
+
+        if (data.message === "Login successful") { //Check success message
+            //Token is now handled by cookie.  No need to access it from javascript
+            setSafeText("status", "✅ Giriş başarılı! Yönlendiriliyorsunuz..."); //Inform the user
+            // Optionally redirect to dashboard
+            setTimeout(() => {
+                window.location.href = DASHBOARD_URL;
+            }, 1200);
+        } else if (data.error) {
+            setSafeText("status", `❌ ${data.error}`);
+        } else {
+            setSafeText("status", "❔ Giriş başarısız!");
+        }
+    } catch (err) {
+        console.error("Hata:", err);
+        setSafeText("status", err.message || "⚠️ Sunucuya ulaşılamadı."); //Show the error message
+    } finally {
+       if (loginBtn) loginBtn.disabled = false;
+    }
 }
 
 // Support pressing Enter in password field to trigger login

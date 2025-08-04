@@ -2,21 +2,35 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- For responsive design -->
     <title>E-Posta Doğrulama</title>
     <link rel="stylesheet" href="../css/style.css">
 </head>
 <body>
-    <div class="verify-box">
-        <h2>E-Posta Doğrulama</h2>
-        <form onsubmit="sendVerificationCode(); return false;">
-            <input id="emailInput" type="email" placeholder="E-posta adresiniz" required>
-            <button type="submit">Kod Gönder</button>
-        </form>
-        <p id="emailStatus"></p>
+    <div class="verify-container">
+        <div class="verify-box">
+            <h2>E-Posta Doğrulama</h2>
+            <form onsubmit="sendVerificationCode(); return false;">
+                <fieldset>
+                    <legend>E-posta adresinizi doğrulayın</legend>
 
-        <div id="codeZone" style="display:none;">
-            <input id="emailCode" type="text" placeholder="Doğrulama Kodu">
-            <button onclick="verifyEmailCode()">Doğrula</button>
+                    <div class="form-group">
+                        <label for="emailInput">E-posta adresiniz:</label>
+                        <input id="emailInput" type="email" placeholder="E-posta adresiniz" required aria-describedby="emailHelp">
+                    </div>
+
+                    <button type="submit">Kod Gönder</button>
+                </fieldset>
+            </form>
+            <p id="emailStatus" role="alert"></p>  <!-- role="alert" for screen readers -->
+
+            <div id="codeZone" style="display:none;">
+                <div class="form-group">
+                    <label for="emailCode">Doğrulama Kodu:</label>
+                    <input id="emailCode" type="text" placeholder="Doğrulama Kodu" aria-describedby="codeHelp">
+                </div>
+                <button onclick="verifyEmailCode()">Doğrula</button>
+            </div>
         </div>
     </div>
     <script src="../js/emailVerify.js"></script>

@@ -2,18 +2,31 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">  <!-- For responsive design -->
     <title>PioneerAI Panel</title>
     <link rel="stylesheet" href="../css/style.css">
 </head>
 <body>
-    <div class="dashboard-box">
-        <h2>Hoş Geldin, <span id="userName">[Kullanıcı]</span>!</h2>
+    <div class="dashboard-container">
+        <header>
+            <h1>PioneerAI Dashboard</h1>
+        </header>
 
-        <p><strong>API Anahtarın:</strong> <span id="apiKey">Yükleniyor...</span></p>
-        <p><strong>E-Posta Durumu:</strong> <span id="emailStatus">Yükleniyor...</span></p>
-        <p><strong>Son Giriş:</strong> <span id="lastLogin">Yükleniyor...</span></p>
+        <main>
+            <div class="dashboard-box">
+                <h2>Hoş Geldin, <span id="userName">[Kullanıcı Adı Yükleniyor...]</span>!</h2>  <!-- Loading Placeholder -->
 
-        <button onclick="logout()">Çıkış Yap</button>
+                <p><strong>API Anahtarın:</strong> <span id="apiKey">[API Anahtarı Yükleniyor...]</span></p>  <!-- Loading Placeholder -->
+                <p><strong>E-Posta Durumu:</strong> <span id="emailStatus">[E-Posta Durumu Yükleniyor...]</span></p>  <!-- Loading Placeholder -->
+                <p><strong>Son Giriş:</strong> <span id="lastLogin">[Son Giriş Tarihi Yükleniyor...]</span></p>  <!-- Loading Placeholder -->
+
+                <button onclick="logout()">Çıkış Yap</button>
+            </div>
+        </main>
+
+        <footer>
+            <p>&copy; 2024 PioneerAI</p>
+        </footer>
     </div>
 
     <script src="../js/dashboard.js"></script>

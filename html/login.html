@@ -7,9 +7,11 @@
   <link rel="stylesheet" href="../css/style.css">
 </head>
 <body>
-  <div class="login-container">
+  <main class="login-container">
     <form id="loginForm" novalidate>
-      <h2>PioneerAI Giriş</h2>
+      <header>
+        <h2>PioneerAI Giriş</h2>
+      </header>
 
       <!-- Kullanıcı Adı -->
       <div class="form-group">
@@ -20,6 +22,7 @@
           name="username"
           placeholder="Kullanıcı Adı"
           required
+          aria-describedby="unameError"
         />
         <small class="error-message" id="unameError"></small>
       </div>
@@ -35,11 +38,13 @@
             placeholder="Şifre"
             required
             minlength="8"
+            aria-describedby="pwdError"
           />
           <button
             type="button"
             id="togglePassword"
             aria-label="Parolayı göster/gizle"
+            aria-expanded="false"  <!-- Initial state: password hidden -->
           >
             Göster
           </button>
@@ -60,7 +65,7 @@
 
       <!-- Giriş Butonu -->
       <button type="submit" id="loginBtn">Giriş Yap</button>
-      <small class="server-error" id="serverError"></small>
+      <small class="server-error" id="serverError" role="alert"></small>  <!-- role="alert" for screen readers -->
 
       <!-- Kayıt Ol Bağlantısı -->
       <p class="signup-text">
@@ -68,7 +73,7 @@
         <a href="register.html">Kayıt Ol</a>
       </p>
     </form>
-  </div>
+  </main>
 
   <script type="module" src="../js/login.js"></script>
 </body>

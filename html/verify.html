@@ -2,17 +2,27 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">  <!-- Responsive design -->
     <title>PioneerAI Hesap Doğrulama</title>
     <link rel="stylesheet" href="../css/style.css">
 </head>
 <body>
-    <div id="verifyBox" class="verify-box">
-        <h2>Doğrulama Kodu</h2>
-        <p>E-posta adresinize gönderilen 6 haneli kodu giriniz:</p>
-        <input id="veriCode" type="text" maxlength="6" placeholder="000000">
-        <button onclick="verifyCode()">Doğrula</button>
-        <p id="verifyStatus"></p>
-    </div>
+    <main class="verify-container">
+        <div id="verifyBox" class="verify-box">
+            <h2>Hesap Doğrulama</h2>
+            <p>E-posta adresinize gönderilen 6 haneli kodu giriniz:</p>
+            <form id="verifyForm" onsubmit="verifyCode(); return false;">
+                <div class="form-group">
+                    <label for="veriCode">Doğrulama Kodu:</label>
+                    <input id="veriCode" type="text" maxlength="6" placeholder="000000" required aria-describedby="verifyCodeHelp">
+                    <small id="verifyCodeHelp" class="help-text">Lütfen e-postanıza gelen kodu girin.</small>
+                </div>
+                <button type="submit">Doğrula</button>
+            </form>
+            <p id="verifyStatus" role="alert"></p>
+            <button onclick="resendCode()">Kodu Tekrar Gönder</button> <!-- Resend Code Button -->
+        </div>
+    </main>
 
     <script src="../js/verify.js"></script>
 </body>

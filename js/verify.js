@@ -1,56 +1,58 @@
-let attemptCount = 0;
-let captchaRequired = false;
+// verify.js (Refactored & Enhanced - RECAPTCHA INTEGRATED)
 
-function verifyCode() {
+const API_ENDPOINT_VERIFY = "http://localhost:5000/verify"; // Configuration
+const DASHBOARD_URL = "../html/dashboard.html";
+
+async function verifyCode() {
     const code = document.getElementById("veriCode").value.trim();
-    const captchaInput = document.getElementById("captchaInput")?.value?.trim();
+    const verifyStatusEl = document.getElementById("verifyStatus");
 
     // ?? Kod kontrolü öncesi: geçersizlik önlemi
     if (!code || code.length !== 6 || isNaN(code)) {
-        document.getElementById("verifyStatus").innerText = "?? Geçerli 6 haneli bir kod giriniz.";
+        verifyStatusEl.innerText = "?? Geçerli 6 haneli bir kod giriniz.";
         return;
     }
 
-    // ?? CAPTCHA devredeyse önce onu kontrol et
-    if (captchaRequired && captchaInput !== "jp67y") {
-        document.getElementById("verifyStatus").innerText = "? Karakter dizisi yanlış. Bot olabileceğiniz algılandı.";
+    //Get reCAPTCHA response
+    const recaptchaResponse = grecaptcha.getResponse();
+
+    if (!recaptchaResponse) {
+        verifyStatusEl.innerText = "Lütfen reCAPTCHA'yı tamamlayın.";
         return;
     }
 
-    // ?? Backend'e doğrulama isteği gönder
-    fetch("http://localhost:5000/verify", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code })
-    })
-        .then(res => res.json())
-        .then(data => {
-            if (data.status === "success") {
-                document.getElementById("verifyStatus").innerText = "? Doğrulama başarılı! PioneerAI paneline yönlendiriliyorsunuz...";
-                attemptCount = 0;
-                captchaRequired = false;
+    verifyStatusEl.innerText = "Doğrulanıyor..."; //Show loading
 
-                setTimeout(() => {
-                    window.location.href = "../html/dashboard.html";
-                }, 2000);
-            } else {
-                attemptCount++;
+    try {
+        const formData = new FormData();
+        formData.append("code", code);
+        formData.append("recaptcha_response", recaptchaResponse); //Send reCAPTCHA response to backend
 
-                if (attemptCount >= 3 && !captchaRequired) {
-                    captchaRequired = true;
-                    const captchaHtml = `
-          <p>Lütfen bot olmadığınızı doğrulayın: <strong>jp67y</strong></p>
-          <input id="captchaInput" type="text" placeholder="jp67y">
-        `;
-                    document.getElementById("verifyBox").insertAdjacentHTML("beforeend", captchaHtml);
-                }
-
-                document.getElementById("verifyStatus").innerText =
-                    "? Kod hatalı! " + (captchaRequired ? "Doğrulamak için karakter dizisini giriniz." : "Tekrar deneyin.");
-            }
-        })
-        .catch(error => {
-            console.error("Sunucu hatası:", error);
-            document.getElementById("verifyStatus").innerText = "? Sunucuya erişilemiyor.";
+        const response = await fetch(API_ENDPOINT_VERIFY, {
+            method: "POST",
+            body: formData //Use FormData for reCAPTCHA
         });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        if (data.status === "success") {
+            verifyStatusEl.innerText = "? Doğrulama başarılı! PioneerAI paneline yönlendiriliyorsunuz...";
+
+            setTimeout(() => {
+                window.location.href = DASHBOARD_URL;
+            }, 2000);
+        } else {
+            verifyStatusEl.innerText = "? Kod hatalı! Lütfen tekrar deneyin."; //Generic message
+        }
+    } catch (error) {
+        console.error("Sunucu hatası:", error);
+        verifyStatusEl.innerText = "? Sunucuya erişilemiyor.";
+    } finally {
+        //Reset reCAPTCHA after each attempt
+        grecaptcha.reset();
+    }
 }

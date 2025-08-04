@@ -7,9 +7,11 @@
     <link rel="stylesheet" href="../css/style.css" />
 </head>
 <body>
-    <div class="register-container">
+    <main class="register-container">
         <form id="registerForm" novalidate>
-            <h2>Kayıt Ol</h2>
+            <header>
+                <h2>Kayıt Ol</h2>
+            </header>
 
             <!-- Kullanıcı Adı -->
             <div class="form-group">
@@ -20,6 +22,7 @@
                     name="username"
                     placeholder="Kullanıcı Adı"
                     required
+                    aria-describedby="regUnameError"
                 />
                 <small class="error-message" id="regUnameError"></small>
             </div>
@@ -33,6 +36,7 @@
                     name="email"
                     placeholder="E-posta adresiniz"
                     required
+                    aria-describedby="regEmailError"
                 />
                 <small class="error-message" id="regEmailError"></small>
             </div>
@@ -47,13 +51,14 @@
                     placeholder="Şifre (min 8 karakter)"
                     required
                     minlength="8"
+                    aria-describedby="regPwdError"
                 />
                 <small class="error-message" id="regPwdError"></small>
             </div>
 
             <!-- Kayıt Butonu -->
             <button type="submit" id="registerBtn">Kayıt Ol</button>
-            <small class="server-error" id="regServerError"></small>
+            <small class="server-error" id="regServerError" role="alert"></small>
 
             <!-- Giriş Bağlantısı -->
             <p class="login-text">
@@ -61,7 +66,7 @@
                 <a href="login.html">Giriş Yap</a>
             </p>
         </form>
-    </div>
+    </main>
     <script type="module" src="../js/registry.js"></script>
 </body>
 </html>

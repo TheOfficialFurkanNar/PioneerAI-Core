@@ -3,6 +3,7 @@ const tsPlugin = require("@typescript-eslint/eslint-plugin");
 const reactPlugin = require("eslint-plugin-react");
 const importPlugin = require("eslint-plugin-import");
 const prettierPlugin = require("eslint-plugin-prettier");
+const reactHooksPlugin = require("eslint-plugin-react-hooks"); // Import React Hooks plugin
 
 module.exports = [
   eslint.configs.recommended,
@@ -12,6 +13,7 @@ module.exports = [
       react: reactPlugin,
       import: importPlugin,
       prettier: prettierPlugin,
+      "react-hooks": reactHooksPlugin, // Add React Hooks plugin
     },
     rules: {
       // General JS/TS rules
@@ -48,6 +50,16 @@ module.exports = [
           semi: true,
         }
       ],
+
+      // TypeScript rules
+      "@typescript-eslint/explicit-function-return-type": "warn",
+      "@typescript-eslint/no-explicit-any": "warn",
+      "@typescript-eslint/no-unused-vars": "warn",
+      "@typescript-eslint/no-unused-expressions": "warn",
+
+      // React Hooks rules
+      "react-hooks/rules-of-hooks": "error", // Checks rules of Hooks
+      "react-hooks/exhaustive-deps": "warn", // Checks effect dependencies
     },
     languageOptions: {
       sourceType: "module",

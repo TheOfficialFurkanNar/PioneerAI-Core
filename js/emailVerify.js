@@ -5,15 +5,13 @@ const sendBtn    = document.getElementById("sendBtn");
 const emailInput = document.getElementById("emailInput");
 const statusEl   = document.getElementById("emailStatus");
 const codeZone   = document.getElementById("codeZone");
-const ENDPOINT   = "http://localhost:5000/send-code";
+const ENDPOINT   = "http://localhost:5000/send-code"; // Configuration Variable
 
 // Accessibility: Announce status updates
 if (statusEl) statusEl.setAttribute("aria-live", "polite");
 
 /**
  * E-posta formatını kontrol eder.
- * @param {string} email
- * @returns {string|null} Hata mesajı veya null
  */
 function validateEmail(email) {
   const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -43,7 +41,7 @@ async function sendVerificationCode() {
   statusEl.textContent  = "Kod gönderiliyor…";
 
   try {
-    const data = await postJSON(ENDPOINT, { email }, 7000);
+    const data = await postJSON(ENDPOINT, { email }); // Remove timeout from here, handle in api.js
     if (data.status === "success") {
       statusEl.textContent = "✔ Kod gönderildi!";
       codeZone.style.display = "block";
@@ -51,15 +49,20 @@ async function sendVerificationCode() {
       const codeInput = codeZone.querySelector("input");
       if (codeInput) codeInput.focus();
     } else {
-      statusEl.textContent = "✖ Kod gönderilemedi. Lütfen tekrar deneyin.";
+      statusEl.textContent = `✖ Kod gönderilemedi. Lütfen tekrar deneyin. Hata: ${data.message || 'Bilinmiyor'}`;
     }
   } catch (err) {
+    console.error("Sunucu hatası:", err);
+    let message = "⚠ Sunucuya ulaşılamıyor.";
+
     if (err.name === "AbortError") {
-      statusEl.textContent = "⌛ İstek zaman aşımına uğradı.";
-    } else {
-      console.error("Sunucu hatası:", err);
-      statusEl.textContent = "⚠ Sunucuya ulaşılamıyor.";
+      message = "⌛ İstek zaman aşımına uğradı.";
+    } else if (err.message) {
+      message = `⚠ Sunucu hatası: ${err.message}`; //Display backend error message
     }
+
+    statusEl.textContent = message;
+
   } finally {
     sendBtn.disabled = false;
   }
