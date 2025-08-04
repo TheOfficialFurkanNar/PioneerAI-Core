@@ -1,7 +1,7 @@
-// login.js (Refactored & Enhanced - COOKIE BASED)
+// login.js (JWT Token Based Authentication)
 
-const API_ENDPOINT_LOGIN = "http://localhost:5000/login"; // Configuration
-const DASHBOARD_URL = "../html/dashboard.html";
+const API_ENDPOINT_LOGIN = "http://localhost:5000/login";
+const DASHBOARD_URL = "dashboard.html";
 
 // Utility for safe DOM updates
 function setSafeText(id, value, fallback = "") {
@@ -9,22 +9,38 @@ function setSafeText(id, value, fallback = "") {
     if (el) el.innerText = value || fallback;
 }
 
+// Token management
+function saveToken(token) {
+    localStorage.setItem('auth_token', token);
+}
+
+function getToken() {
+    return localStorage.getItem('auth_token');
+}
+
+function removeToken() {
+    localStorage.removeItem('auth_token');
+}
+
 // Main login function
 async function loginUser() {
     const username = document.getElementById("uname")?.value.trim();
     const password = document.getElementById("pwd")?.value.trim();
-    const statusEl = document.getElementById("status");
-    const loginBtn = document.getElementById("loginBtn"); //Disable button while loading
+    const statusEl = document.getElementById("serverError");
+    const loginBtn = document.getElementById("loginBtn");
+
+    // Clear previous errors
+    setSafeText("serverError", "");
 
     // Accessibility: Announce status updates
     if (statusEl) statusEl.setAttribute("aria-live", "polite");
 
     if (!username || !password) {
-        setSafeText("status", "Lütfen tüm alanları doldurun!");
+        setSafeText("serverError", "Lütfen tüm alanları doldurun!");
         return;
     }
 
-    setSafeText("status", "Giriş yapılıyor...");
+    setSafeText("serverError", "Giriş yapılıyor...");
     if (loginBtn) loginBtn.disabled = true;
 
     try {
@@ -34,31 +50,25 @@ async function loginUser() {
             body: JSON.stringify({ username, password })
         });
 
-        if (!response.ok) {
-            let message = `Giriş başarısız. Hata kodu: ${response.status}`;
-            if(response.status === 401 || response.status === 403) {
-                message = "Kullanıcı adı veya şifre hatalı.";
-            }
-            throw new Error(message);
-        }
-
         const data = await response.json();
 
-        if (data.message === "Login successful") { //Check success message
-            //Token is now handled by cookie.  No need to access it from javascript
-            setSafeText("status", "✅ Giriş başarılı! Yönlendiriliyorsunuz..."); //Inform the user
-            // Optionally redirect to dashboard
+        if (response.ok && data.token) {
+            // Save token and user info
+            saveToken(data.token);
+            localStorage.setItem('user_info', JSON.stringify(data.user));
+            
+            setSafeText("serverError", "✅ Giriş başarılı! Yönlendiriliyorsunuz...");
+            
+            // Redirect to dashboard
             setTimeout(() => {
                 window.location.href = DASHBOARD_URL;
             }, 1200);
-        } else if (data.error) {
-            setSafeText("status", `❌ ${data.error}`);
         } else {
-            setSafeText("status", "❔ Giriş başarısız!");
+            setSafeText("serverError", `❌ ${data.error || 'Giriş başarısız!'}`);
         }
     } catch (err) {
         console.error("Hata:", err);
-        setSafeText("status", err.message || "⚠️ Sunucuya ulaşılamadı."); //Show the error message
+        setSafeText("serverError", "⚠️ Sunucuya ulaşılamadı.");
     } finally {
        if (loginBtn) loginBtn.disabled = false;
     }

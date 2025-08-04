@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PioneerChat 🧠</title>
+  <link rel="stylesheet" href="../css/style.css" />
+</head>
+<body>
+  <!-- Chat Interface -->
+  <div class="container" style="position: relative;">
+    <main>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h2>PioneerChat 🧠</h2>
+        <div>
+          <a href="dashboard.html" style="margin-right: 10px; padding: 8px 16px; background-color: #007bff; color: white; text-decoration: none; border-radius: 4px;">Dashboard</a>
+          <button id="logoutBtn" style="padding: 8px 16px; background-color: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer;">Çıkış Yap</button>
+        </div>
+      </div>
+
+      <!-- Sohbet Kutusu -->
+      <div id="chatWindow" class="chat-box" aria-live="polite"></div>
+
+      <!-- Kontrol Paneli -->
+      <div class="controls">
+        <label for="summaryStyle">Özet Stili:</label>
+        <select id="summaryStyle">
+          <option value="brief">Kısa Özet</option>
+          <option value="deep">Derinlemesine</option>
+          <option value="bullet">Madde Madde</option>
+          <option value="technical">Teknik</option>
+          <option value="story">Hikâye</option>
+        </select>
+
+        <label for="streamToggle">
+          <input type="checkbox" id="streamToggle" />
+          Akışlı Mod
+        </label>
+      </div>
+
+      <!-- Giriş Alanı ve Buton -->
+      <form id="chatForm">
+        <textarea
+          id="userInput"
+          rows="2"
+          placeholder="Mesajınızı yazın ve Enter'a basın..."
+        ></textarea>
+        <button id="sendBtn" type="submit">Gönder</button>
+      </form>
+    </main>
+  </div>
+
+  <!-- PioneerChat Modülü -->
+  <script type="module" src="../js/pioneer.js"></script>
+</body>
+</html>

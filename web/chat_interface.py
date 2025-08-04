@@ -11,8 +11,9 @@ from flask import Flask, request, jsonify, Response
 from flask_cors import CORS
 from dotenv import load_dotenv
 
-from orchestrator import handle_standard_message, handle_stream_message
+from modules.orchestrator import handle_standard_message, handle_stream_message
 from config.settings import MEMORY_JSON as MEMORY_PATH
+from .auth_routes import auth_bp, token_required
 
 import tiktoken
 
@@ -23,7 +24,10 @@ load_dotenv()
 app = Flask(__name__)
 allowed_origins = os.getenv("ALLOWED_ORIGINS", "*")
 allowed_origins = allowed_origins.split(",") if allowed_origins != "*" else "*"
-CORS(app, origins=allowed_origins)
+CORS(app, origins=allowed_origins, supports_credentials=True)
+
+# 🔐 Auth routes'ları kaydet
+app.register_blueprint(auth_bp)
 
 # 🔐 Dosya sistemi güvenliği
 os.makedirs(os.path.dirname(MEMORY_PATH), exist_ok=True)
@@ -66,12 +70,13 @@ def log_performance(reply: str, duration: float):
         f.write(log_entry)
 
 # ------------------------------------------------------------
-# 🔹 Tek Yanıtlı Özet Endpoint'i
+# 🔹 Tek Yanıtlı Özet Endpoint'i (Kimlik doğrulama gerekli)
 # ------------------------------------------------------------
 @app.route("/ask/summary", methods=["POST"])
-def ask_summary():
+@token_required
+def ask_summary(current_user):
     data = request.get_json()
-    user_id = data.get("user_id", "guest")
+    user_id = str(current_user.id)  # Authenticated user ID
     message = data.get("prompt", "")
     style = data.get("style", "brief")
 
@@ -91,12 +96,13 @@ def ask_summary():
     })
 
 # ------------------------------------------------------------
-# 🔸 Akışlı (stream) Özet Endpoint'i
+# 🔸 Akışlı (stream) Özet Endpoint'i (Kimlik doğrulama gerekli)
 # ------------------------------------------------------------
 @app.route("/ask/summary/stream", methods=["POST"])
-def stream_summary():
+@token_required
+def stream_summary(current_user):
     data = request.get_json()
-    user_id = data.get("user_id", "guest")
+    user_id = str(current_user.id)  # Authenticated user ID
     message = data.get("prompt", "")
     style = data.get("style", "brief")
 

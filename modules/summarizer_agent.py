@@ -9,16 +9,19 @@ import time
 import logging
 from typing import Literal, Dict, AsyncGenerator
 
-import openai
+from openai import AsyncOpenAI
 
-# OpenAIError, yeni SDK'da openai._exceptions içinde yer alıyor
+# OpenAI exceptions
 try:
-    from openai._exceptions import OpenAIError
+    from openai import OpenAIError
 except ImportError:
-    OpenAIError = Exception
-    logging.warning(
-        "[SummarizerAgent] openai._exceptions bulunamadı, Exception fallback kullanılıyor."
-    )
+    try:
+        from openai._exceptions import OpenAIError
+    except ImportError:
+        OpenAIError = Exception
+        logging.warning(
+            "[SummarizerAgent] OpenAI exceptions bulunamadı, Exception fallback kullanılıyor."
+        )
 
 # Diskcache importu; yoksa in-memory fallback
 try:
@@ -84,7 +87,7 @@ class SummarizerAgent:
         self.mem_analyzer = MemoryAnalyzer(memory_path=memory_path)
         self.model = model
         self.timeout = timeout
-        openai.api_key = os.getenv("OPENAI_API_KEY")
+        self.client = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
     async def generate_summary(
         self,
@@ -122,7 +125,7 @@ class SummarizerAgent:
 
         try:
             resp = await asyncio.wait_for(
-                openai.ChatCompletion.acreate(
+                self.client.chat.completions.create(
                     model=self.model,
                     messages=[
                         {"role": "system", "content": "You are a helpful summarizer."},
@@ -175,7 +178,7 @@ class SummarizerAgent:
 
         try:
             resp = await asyncio.wait_for(
-                openai.ChatCompletion.acreate(
+                self.client.chat.completions.create(
                     model=self.model,
                     messages=[
                         {"role": "system", "content": "You are a helpful summarizer."},
@@ -189,9 +192,8 @@ class SummarizerAgent:
             )
 
             async for chunk in resp:
-                text = chunk.choices[0].delta.get("content", "")
-                if text:
-                    yield text
+                if chunk.choices[0].delta.content:
+                    yield chunk.choices[0].delta.content
 
         except asyncio.TimeoutError:
             yield self._fallback_summary(message)

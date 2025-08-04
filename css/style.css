@@ -138,21 +138,444 @@ body {
     transform: scale(0.95); /* Visual feedback on click */
 }
 
+/* Authentication Forms */
+.login-container, .register-container {
+    max-width: 400px;
+    margin: 50px auto;
+    padding: 30px;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.login-container header, .register-container header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.login-container h2, .register-container h2 {
+    color: var(--text-color);
+    margin: 0;
+    font-size: 24px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+    color: var(--text-color);
+}
+
+.form-group input {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid var(--input-border-color);
+    border-radius: var(--border-radius);
+    font-size: var(--font-size);
+    transition: border-color 0.2s ease;
+    box-sizing: border-box;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: var(--input-focus-border-color);
+    box-shadow: 0 0 5px rgba(102, 175, 233, 0.3);
+}
+
+.password-wrapper {
+    position: relative;
+    display: flex;
+}
+
+.password-wrapper input {
+    flex: 1;
+    padding-right: 80px;
+}
+
+.password-wrapper button {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: #666;
+    cursor: pointer;
+    font-size: 14px;
+    padding: 5px 10px;
+}
+
+.password-wrapper button:hover {
+    color: var(--text-color);
+}
+
+.form-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    font-size: 14px;
+}
+
+.form-footer label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+.form-footer input[type="checkbox"] {
+    margin-right: 8px;
+    width: auto;
+}
+
+.forgot-link {
+    color: var(--send-button-background-color);
+    text-decoration: none;
+}
+
+.forgot-link:hover {
+    text-decoration: underline;
+}
+
+#loginBtn, #registerBtn {
+    width: 100%;
+    padding: 12px;
+    background-color: var(--send-button-background-color);
+    color: white;
+    border: none;
+    border-radius: var(--border-radius);
+    font-size: var(--font-size);
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    margin-bottom: 15px;
+}
+
+#loginBtn:hover, #registerBtn:hover {
+    background-color: var(--send-button-hover-background-color);
+}
+
+#loginBtn:disabled, #registerBtn:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+.error-message {
+    color: #dc3545;
+    font-size: 12px;
+    margin-top: 5px;
+    display: block;
+}
+
+.server-error {
+    color: #dc3545;
+    font-size: 14px;
+    text-align: center;
+    display: block;
+    margin-top: 10px;
+}
+
+.signup-text, .login-text {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 14px;
+}
+
+.signup-text a, .login-text a {
+    color: var(--send-button-background-color);
+    text-decoration: none;
+}
+
+.signup-text a:hover, .login-text a:hover {
+    text-decoration: underline;
+}
+
+/* Dashboard Styles */
+.dashboard-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.dashboard-container header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.dashboard-container h1 {
+    color: var(--text-color);
+    margin: 0;
+}
+
+.dashboard-box {
+    background: white;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+
+.dashboard-box h2 {
+    color: var(--text-color);
+    margin-bottom: 20px;
+}
+
+.dashboard-box p {
+    margin-bottom: 15px;
+    line-height: 1.5;
+}
+
+.dashboard-box button {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    font-size: var(--font-size);
+    transition: background-color 0.2s ease;
+}
+
+.dashboard-box button:hover {
+    background-color: #c82333;
+}
+
+.dashboard-container footer {
+    text-align: center;
+    margin-top: 30px;
+    color: #666;
+    font-size: 14px;
+}
+
+/* Chat Interface Updates */
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.chat-box {
+    width: 100%;
+    height: 400px;
+    overflow-y: auto;
+    padding: var(--padding);
+    background-color: var(--chat-background-color);
+    border: 1px solid var(--input-border-color);
+    border-radius: var(--border-radius);
+    margin-bottom: var(--margin-bottom);
+}
+
+.user-msg, .bot-msg {
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: var(--border-radius);
+    max-width: 80%;
+    word-wrap: break-word;
+}
+
+.user-msg {
+    background-color: var(--user-message-background-color);
+    margin-left: auto;
+    text-align: right;
+}
+
+.bot-msg {
+    background-color: var(--bot-message-background-color);
+    margin-right: auto;
+}
+
+.controls {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.controls label {
+    font-weight: 500;
+}
+
+.controls select {
+    padding: 8px;
+    border: 1px solid var(--input-border-color);
+    border-radius: var(--border-radius);
+    font-size: 14px;
+}
+
+#chatForm {
+    display: flex;
+    gap: 10px;
+    align-items: flex-end;
+}
+
+#userInput {
+    flex: 1;
+    padding: 12px;
+    border: 2px solid var(--input-border-color);
+    border-radius: var(--border-radius);
+    font-size: var(--font-size);
+    resize: vertical;
+    min-height: 50px;
+    font-family: var(--font-family);
+}
+
+#userInput:focus {
+    outline: none;
+    border-color: var(--input-focus-border-color);
+    box-shadow: 0 0 5px rgba(102, 175, 233, 0.3);
+}
+
+#sendBtn {
+    padding: 12px 24px;
+    background-color: var(--send-button-background-color);
+    color: white;
+    border: none;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    font-size: var(--font-size);
+    transition: background-color 0.2s ease;
+    white-space: nowrap;
+}
+
+#sendBtn:hover {
+    background-color: var(--send-button-hover-background-color);
+}
+
+#sendBtn:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+/* Landing Page Styles */
+.landing-container {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.landing-content {
+    text-align: center;
+    color: white;
+    max-width: 600px;
+    padding: 40px 20px;
+}
+
+.landing-content header h1 {
+    font-size: 3rem;
+    margin-bottom: 10px;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+}
+
+.landing-content header p {
+    font-size: 1.2rem;
+    margin-bottom: 40px;
+    opacity: 0.9;
+}
+
+.feature-box {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    padding: 40px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.feature-box h2 {
+    font-size: 2rem;
+    margin-bottom: 20px;
+    color: white;
+}
+
+.feature-box p {
+    font-size: 1.1rem;
+    line-height: 1.6;
+    margin-bottom: 30px;
+    opacity: 0.9;
+}
+
+.auth-buttons {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.btn {
+    display: inline-block;
+    padding: 15px 30px;
+    text-decoration: none;
+    border-radius: 50px;
+    font-weight: 600;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.btn-primary {
+    background-color: #4caf50;
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: #45a049;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(76, 175, 80, 0.4);
+}
+
+.btn-secondary {
+    background-color: transparent;
+    color: white;
+    border: 2px solid white;
+}
+
+.btn-secondary:hover {
+    background-color: white;
+    color: #667eea;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(255, 255, 255, 0.3);
+}
+
 /* Mobile Responsiveness */
 @media (max-width: 480px) {
     body {
         padding: 10px;
     }
 
-    #chat-box {
+    .login-container, .register-container {
+        margin: 20px auto;
+        padding: 20px;
+    }
+
+    .dashboard-container {
+        padding: 10px;
+    }
+
+    .chat-box {
         height: 250px;
     }
 
-    #input-field {
-        font-size: 14px;
+    #chatForm {
+        flex-direction: column;
     }
 
-    #send-btn {
+    #sendBtn {
         width: 100%;
+    }
+
+    .controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .form-footer {
+        flex-direction: column;
+        gap: 10px;
+        align-items: stretch;
     }
 }

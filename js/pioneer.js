@@ -1,4 +1,4 @@
-// js/pioneer.js (Improved)
+// js/pioneer.js (Improved with Authentication)
 
 // Element referansları
 const sendBtn = document.getElementById("sendBtn");
@@ -7,14 +7,58 @@ const styleSelect = document.getElementById("summaryStyle");
 const chatWindow = document.getElementById("chatWindow");
 const streamToggle = document.getElementById("streamToggle");
 
-const API_ENDPOINT_SUMMARY = "/ask/summary";
-const API_ENDPOINT_STREAM = "/ask/summary/stream";
-const USER_ID_KEY = "userId";
-const DEFAULT_USER_ID = "guest";
+const API_ENDPOINT_SUMMARY = "http://localhost:5000/ask/summary";
+const API_ENDPOINT_STREAM = "http://localhost:5000/ask/summary/stream";
+const AUTH_TOKEN_KEY = "auth_token";
 
-// Function to get the user ID
+// Check authentication on page load
+document.addEventListener('DOMContentLoaded', function() {
+    const token = localStorage.getItem(AUTH_TOKEN_KEY);
+    if (!token) {
+        alert('Lütfen önce giriş yapın.');
+        window.location.href = 'login.html';
+        return;
+    }
+    
+    // Add logout button to chat interface
+    addLogoutButton();
+});
+
+// Add logout functionality to chat interface
+function addLogoutButton() {
+    const container = document.querySelector('.container');
+    if (container && !document.getElementById('logoutBtn')) {
+        const logoutBtn = document.createElement('button');
+        logoutBtn.id = 'logoutBtn';
+        logoutBtn.textContent = 'Çıkış Yap';
+        logoutBtn.style.cssText = 'position: absolute; top: 20px; right: 20px; padding: 8px 16px; background-color: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer;';
+        logoutBtn.onclick = logout;
+        container.appendChild(logoutBtn);
+    }
+}
+
+// Logout function
+function logout() {
+    if (confirm('Çıkış yapmak istediğinize emin misiniz?')) {
+        localStorage.removeItem(AUTH_TOKEN_KEY);
+        localStorage.removeItem('user_info');
+        window.location.href = 'login.html';
+    }
+}
+
+// Get authentication token
+function getAuthToken() {
+    return localStorage.getItem(AUTH_TOKEN_KEY);
+}
+
+// Function to get the user ID from stored user info
 function getUserId() {
-    return sessionStorage.getItem(USER_ID_KEY) || DEFAULT_USER_ID;
+    const userInfo = localStorage.getItem('user_info');
+    if (userInfo) {
+        const user = JSON.parse(userInfo);
+        return user.id || user.username || 'guest';
+    }
+    return 'guest';
 }
 
 //Template for the message
@@ -48,9 +92,17 @@ async function sendMessage(endpoint, userMessage, isStream = false) {
     chatWindow.scrollTop = chatWindow.scrollHeight;
 
     try {
+        const token = getAuthToken();
+        if (!token) {
+            throw new Error('Authentication required');
+        }
+
         const response = await fetch(endpoint, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: { 
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            },
             body: JSON.stringify({
                 user_id: getUserId(),
                 prompt: userMessage,
@@ -59,6 +111,14 @@ async function sendMessage(endpoint, userMessage, isStream = false) {
         });
 
         if (!response.ok) {
+            if (response.status === 401) {
+                // Token expired or invalid
+                localStorage.removeItem(AUTH_TOKEN_KEY);
+                localStorage.removeItem('user_info');
+                alert('Oturumunuz sona erdi. Lütfen tekrar giriş yapın.');
+                window.location.href = 'login.html';
+                return;
+            }
             throw new Error(`HTTP error! status: ${response.status}`);
         }
 
