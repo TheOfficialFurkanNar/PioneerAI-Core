@@ -19,7 +19,6 @@ JWT_EXPIRATION_HOURS = 24
 # Blueprint oluştur
 auth_bp = Blueprint('auth', __name__)
 
-
 def generate_token(user_id: int) -> str:
     """JWT token oluştur"""
     payload = {
@@ -28,7 +27,6 @@ def generate_token(user_id: int) -> str:
         'iat': datetime.utcnow()
     }
     return jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
-
 
 def decode_token(token: str) -> dict:
     """JWT token çöz"""
@@ -40,10 +38,8 @@ def decode_token(token: str) -> dict:
     except jwt.InvalidTokenError:
         return {"success": False, "message": "Geçersiz token"}
 
-
 def token_required(f):
     """Token gerektiren endpoint'ler için decorator"""
-
     @wraps(f)
     def decorated(*args, **kwargs):
         token = None
@@ -73,7 +69,6 @@ def token_required(f):
         return f(*args, **kwargs)
 
     return decorated
-
 
 @auth_bp.route('/register', methods=['POST'])
 def register():
@@ -123,7 +118,6 @@ def register():
     except Exception as e:
         return jsonify({'error': True, 'message': f'Sunucu hatası: {str(e)}'}), 500
 
-
 @auth_bp.route('/login', methods=['POST'])
 def login():
     """Kullanıcı giriş endpoint'i"""
@@ -157,7 +151,6 @@ def login():
     except Exception as e:
         return jsonify({'error': True, 'message': f'Sunucu hatası: {str(e)}'}), 500
 
-
 @auth_bp.route('/logout', methods=['POST'])
 @token_required
 def logout():
@@ -168,7 +161,6 @@ def logout():
         'success': True,
         'message': 'Başarıyla çıkış yapıldı'
     }), 200
-
 
 @auth_bp.route('/userinfo', methods=['GET'])
 @token_required
@@ -189,7 +181,6 @@ def get_user_info():
 
     except Exception as e:
         return jsonify({'error': True, 'message': f'Sunucu hatası: {str(e)}'}), 500
-
 
 @auth_bp.route('/verify-token', methods=['POST'])
 def verify_token():

@@ -1,43 +1,15 @@
-// js/dashboard.js - JWT Token Based Dashboard
+// dashboard.js (Refactored & Enhanced)
 
-const API_ENDPOINT_USERINFO = "/auth/userinfo";
-const API_ENDPOINT_LOGOUT = "/auth/logout";
-const AUTH_TOKEN_KEY = "auth_token";
-const LOGIN_URL = "/html/login.html";
-const CHAT_URL = "/html/index.html";
-const SESSION_TIMEOUT = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+const API_ENDPOINT_USERINFO = "http://localhost:5000/userinfo"; // Configuration
+const AUTH_TOKEN_KEY = 'authToken'; // Consistent naming
 
-// Utility: Set text or fallback
-function setSafeText(id, value, fallback = "[Bilinmiyor]") {
-    const el = document.getElementById(id);
-    if (el) el.innerText = value || fallback;
-}
+document.addEventListener("DOMContentLoaded", async () => { //async
+    const authToken = localStorage.getItem(AUTH_TOKEN_KEY); //Use authToken, not api_key
 
-// Show alert function
-function showAlert(message) {
-    alert(message);
-}
-
-// Check if user is authenticated
-function isAuthenticated() {
-    const token = localStorage.getItem(AUTH_TOKEN_KEY);
-    return token !== null && token !== "";
-}
-
-// Redirect to login if not authenticated
-function redirectToLogin() {
-    localStorage.removeItem(AUTH_TOKEN_KEY);
-    window.location.replace(LOGIN_URL);
-}
-
-// Load user information
-async function loadUserInfo() {
-    const authToken = localStorage.getItem(AUTH_TOKEN_KEY);
-
-    if (!authToken) {
-        showAlert("Oturumunuz sona erdi. Lütfen tekrar giriş yapın.");
-        redirectToLogin();
-        return;
+    // Utility: Set text or fallback
+    function setSafeText(id, value, fallback = "[Bilinmiyor]") {
+        const el = document.getElementById(id);
+        if (el) el.innerText = value || fallback;
     }
 
     // Show loading state
@@ -46,84 +18,56 @@ async function loadUserInfo() {
     setSafeText("emailStatus", "Yükleniyor...");
     setSafeText("lastLogin", "Yükleniyor...");
 
+    if (!authToken) { //Check for auth token
+        showAlert("Oturumunuz sona erdi. Lütfen tekrar giriş yapın."); //More user friendly
+        window.location.replace("../html/login.html");  //Use replace
+        return;
+    }
+
     try {
-        const response = await fetch(API_ENDPOINT_USERINFO, {
-            method: "GET",
+        const response = await fetch(API_ENDPOINT_USERINFO, { //await
+            method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": `Bearer ${authToken}`
-            }
+                "Authorization": `Bearer ${authToken}` //Send auth token
+            },
+            body: JSON.stringify({}) //No need to send anything in the body
         });
 
         if (!response.ok) {
-            if (response.status === 401) {
-                showAlert("Oturumunuz sona erdi. Lütfen tekrar giriş yapın.");
-                redirectToLogin();
-                return;
+            let message = `Kullanıcı bilgisi alınamadı. Hata kodu: ${response.status}`;
+            if(response.status === 401) {
+                message = "Yetkilendirme hatası. Lütfen tekrar giriş yapın.";
             }
-            throw new Error(`Kullanıcı bilgisi alınamadı. Hata kodu: ${response.status}`);
+            throw new Error(message);
         }
 
         const data = await response.json();
 
-        if (data.success && data.user) {
-            setSafeText("userName", data.user.username);
-            setSafeText("apiKey", "API Anahtarı Ayarlandı");
-            setSafeText("emailStatus", "Aktif"); // Since we don't have email verification yet
-            setSafeText("lastLogin", data.user.last_login || "İlk giriş");
-        } else {
-            throw new Error("Kullanıcı bilgisi alınamadı.");
-        }
+        setSafeText("userName", data.username);
+        //Don't show the API key
+        setSafeText("apiKey", "API Anahtarı Ayarlandı"); //More secure
+        setSafeText("emailStatus", data.email_verified ? "Doğrulandı" : "Doğrulanmadı");
+        setSafeText("lastLogin", data.last_login);
 
     } catch (err) {
-        console.error("Dashboard error:", err);
-        showAlert(err.message || "Kullanıcı bilgisi alınamadı. Lütfen tekrar giriş yapın.");
-        redirectToLogin();
+        console.error("Hata:", err);
+        showAlert(err.message || "Kullanıcı bilgisi alınamadı. Lütfen tekrar giriş yapın."); //Show message
+        window.location.replace("../html/login.html"); //Use replace
+
     }
-}
-
-// Logout function with server call
-async function logout() {
-    if (!confirm("Çıkış yapmak istediğinize emin misiniz?")) {
-        return;
-    }
-
-    const authToken = localStorage.getItem(AUTH_TOKEN_KEY);
-
-    if (authToken) {
-        try {
-            // Call logout endpoint
-            await fetch(API_ENDPOINT_LOGOUT, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${authToken}`
-                }
-            });
-        } catch (error) {
-            console.error("Logout error:", error);
-            // Continue with logout even if server call fails
-        }
-    }
-
-    // Remove token and redirect
-    localStorage.removeItem(AUTH_TOKEN_KEY);
-    window.location.replace(LOGIN_URL);
-}
-
-// Navigate to chat interface
-function goToChat() {
-    window.location.href = "/html/index.html";
-}
-
-// DOM Content Loaded Event
-document.addEventListener("DOMContentLoaded", () => {
-    // Check authentication on page load
-    if (!isAuthenticated()) {
-        redirectToLogin();
-        return;
-    }
-
-    // Load user information
-    loadUserInfo();
 });
+
+// Show alert function (replace with your preferred method)
+function showAlert(message) {
+    alert(message); //Replace this with a better UI element
+}
+
+
+// Confirm logout for better UX
+function logout() {
+    if (confirm("Çıkış yapmak istediğinize emin misiniz?")) {
+        localStorage.removeItem(AUTH_TOKEN_KEY); //Remove the token
+        window.location.replace("../html/login.html"); //Use replace
+    }
+}

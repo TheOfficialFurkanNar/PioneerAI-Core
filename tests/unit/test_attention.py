@@ -311,7 +311,6 @@ class TestPerformanceBenchmarks(unittest.TestCase):
 
 def run_async_tests():
     """Run async tests"""
-
     async def async_test_runner():
         test_case = TestAttentionOrchestrator()
         test_case.setUp()

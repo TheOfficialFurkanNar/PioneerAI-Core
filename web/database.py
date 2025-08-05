@@ -8,7 +8,6 @@ from typing import Optional, Dict, Any
 
 DATABASE_PATH = "data/users.db"
 
-
 def init_database():
     """Veritabanını başlat ve kullanıcı tablosunu oluştur"""
     # data dizinini oluştur
@@ -32,17 +31,14 @@ def init_database():
     conn.commit()
     conn.close()
 
-
 def hash_password(password: str) -> str:
     """Şifreyi hash'le"""
     salt = bcrypt.gensalt()
     return bcrypt.hashpw(password.encode('utf-8'), salt).decode('utf-8')
 
-
 def verify_password(password: str, hashed: str) -> bool:
     """Şifreyi doğrula"""
     return bcrypt.checkpw(password.encode('utf-8'), hashed.encode('utf-8'))
-
 
 def create_user(username: str, email: str, password: str) -> Dict[str, Any]:
     """Yeni kullanıcı oluştur"""
@@ -74,7 +70,6 @@ def create_user(username: str, email: str, password: str) -> Dict[str, Any]:
 
     except sqlite3.Error as e:
         return {"success": False, "message": f"Veritabanı hatası: {str(e)}"}
-
 
 def authenticate_user(username: str, password: str) -> Dict[str, Any]:
     """Kullanıcı kimlik doğrulaması"""
@@ -117,7 +112,6 @@ def authenticate_user(username: str, password: str) -> Dict[str, Any]:
     except sqlite3.Error as e:
         return {"success": False, "message": f"Veritabanı hatası: {str(e)}"}
 
-
 def get_user_by_id(user_id: int) -> Optional[Dict[str, Any]]:
     """ID ile kullanıcı bilgilerini getir"""
     try:
@@ -144,7 +138,6 @@ def get_user_by_id(user_id: int) -> Optional[Dict[str, Any]]:
     except sqlite3.Error:
         return None
 
-
 def validate_username(username: str) -> Dict[str, Any]:
     """Kullanıcı adı doğrulaması"""
     if not username:
@@ -157,7 +150,6 @@ def validate_username(username: str) -> Dict[str, Any]:
         return {"valid": False, "message": "Kullanıcı adı sadece harf, rakam, _ ve - içerebilir"}
     return {"valid": True}
 
-
 def validate_email(email: str) -> Dict[str, Any]:
     """Email doğrulaması"""
     import re
@@ -169,7 +161,6 @@ def validate_email(email: str) -> Dict[str, Any]:
         return {"valid": False, "message": "Geçersiz email formatı"}
     return {"valid": True}
 
-
 def validate_password(password: str) -> Dict[str, Any]:
     """Şifre doğrulaması"""
     if not password:
@@ -177,7 +168,6 @@ def validate_password(password: str) -> Dict[str, Any]:
     if len(password) < 8:
         return {"valid": False, "message": "Şifre en az 8 karakter olmalıdır"}
     return {"valid": True}
-
 
 def test_database_connection() -> bool:
     """Test database connection and basic functionality"""

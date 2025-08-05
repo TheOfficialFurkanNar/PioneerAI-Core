@@ -11,10 +11,8 @@ from flask import Flask, request, jsonify, Response
 from flask_cors import CORS
 from dotenv import load_dotenv
 
-from modules.orchestrator import handle_standard_message, handle_stream_message
+from orchestrator import handle_standard_message, handle_stream_message
 from config.settings import MEMORY_JSON as MEMORY_PATH
-from web.auth_routes import auth_bp, token_required
-from web.database import init_database
 
 import tiktoken
 
@@ -23,38 +21,9 @@ load_dotenv()
 
 # 🌐 Flask uygulaması
 app = Flask(__name__)
-
-# Production configuration
-app.config['SECRET_KEY'] = os.getenv('JWT_SECRET', 'pioneer-ai-secret-key-2024')
-app.config['DEBUG'] = os.getenv('FLASK_DEBUG', 'False').lower() == 'true'
-
-# CORS configuration
 allowed_origins = os.getenv("ALLOWED_ORIGINS", "*")
-cors_origins = os.getenv("CORS_ORIGINS", allowed_origins)
-cors_origins = cors_origins.split(",") if cors_origins != "*" else "*"
-
-CORS(app,
-     origins=cors_origins,
-     supports_credentials=True,
-     allow_headers=['Content-Type', 'Authorization'],
-     methods=['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'])
-
-# 🔐 Authentication blueprint'ini kaydet
-app.register_blueprint(auth_bp, url_prefix='/auth')
-
-# 🗄️ Veritabanını başlat
-init_database()
-
-# Security headers middleware
-@app.after_request
-def add_security_headers(response):
-    """Add security headers for production"""
-    response.headers['X-Content-Type-Options'] = 'nosniff'
-    response.headers['X-Frame-Options'] = 'DENY'
-    response.headers['X-XSS-Protection'] = '1; mode=block'
-    response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
-    response.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
-    return response
+allowed_origins = allowed_origins.split(",") if allowed_origins != "*" else "*"
+CORS(app, origins=allowed_origins)
 
 # 🔐 Dosya sistemi güvenliği
 os.makedirs(os.path.dirname(MEMORY_PATH), exist_ok=True)
@@ -100,10 +69,9 @@ def log_performance(reply: str, duration: float):
 # 🔹 Tek Yanıtlı Özet Endpoint'i
 # ------------------------------------------------------------
 @app.route("/ask/summary", methods=["POST"])
-@token_required
 def ask_summary():
     data = request.get_json()
-    user_id = str(request.current_user['id'])  # JWT'den gelen kullanıcı ID'si
+    user_id = data.get("user_id", "guest")
     message = data.get("prompt", "")
     style = data.get("style", "brief")
 
@@ -126,10 +94,9 @@ def ask_summary():
 # 🔸 Akışlı (stream) Özet Endpoint'i
 # ------------------------------------------------------------
 @app.route("/ask/summary/stream", methods=["POST"])
-@token_required
 def stream_summary():
     data = request.get_json()
-    user_id = str(request.current_user['id'])  # JWT'den gelen kullanıcı ID'si
+    user_id = data.get("user_id", "guest")
     message = data.get("prompt", "")
     style = data.get("style", "brief")
 

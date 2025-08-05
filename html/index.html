@@ -3,39 +3,47 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>PioneerAI - Yapay Zeka Asistanı</title>
-  <link rel="stylesheet" href="../css/style.css" />
+  <title>PioneerChat 🧠</title>
+  <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
-  <div class="landing-container">
-    <div class="landing-content">
-      <header>
-        <h1>🧠 PioneerAI</h1>
-        <p>Gelişmiş Yapay Zeka Asistanınız</p>
-      </header>
-      
-      <main>
-        <div class="feature-box">
-          <h2>Hoş Geldiniz!</h2>
-          <p>PioneerAI ile akıllı sohbetler yapın, sorularınızı sorun ve farklı özet stillerinde yanıtlar alın.</p>
-          
-          <div class="auth-buttons">
-            <a href="login.html" class="btn btn-primary">Giriş Yap</a>
-            <a href="registry.html" class="btn btn-secondary">Kayıt Ol</a>
-          </div>
-        </div>
-      </main>
-    </div>
+  <div class="container">
+    <main>
+      <h2>PioneerChat 🧠</h2>
+
+      <!-- Sohbet Kutusu -->
+      <div id="chatWindow" class="chat-box" aria-live="polite"></div>  <!-- aria-live for accessibility -->
+
+      <!-- Kontrol Paneli -->
+      <div class="controls">
+        <label for="summaryStyle">Özet Stili:</label>
+        <select id="summaryStyle">
+          <option value="brief">Kısa Özet</option>
+          <option value="deep">Derinlemesine</option>
+          <option value="bullet">Madde Madde</option>
+          <option value="technical">Teknik</option>
+          <option value="story">Hikâye</option>
+        </select>
+
+        <label for="streamToggle">
+          <input type="checkbox" id="streamToggle" />
+          Akışlı Mod
+        </label>
+      </div>
+
+      <!-- Giriş Alanı ve Buton -->
+      <form id="chatForm">
+        <textarea
+          id="userInput"
+          rows="2"
+          placeholder="Mesajınızı yazın ve Enter’a basın..."
+        ></textarea>
+        <button id="sendBtn" type="submit">Gönder</button>
+      </form>
+    </main>
   </div>
 
-  <script>
-    // Check if user is already logged in and redirect to chat
-    document.addEventListener('DOMContentLoaded', function() {
-      const token = localStorage.getItem('auth_token');
-      if (token) {
-        window.location.href = 'chat.html';
-      }
-    });
-  </script>
+  <!-- PioneerChat Modülü -->
+  <script type="module" src="js/pioneer.js"></script>
 </body>
 </html>

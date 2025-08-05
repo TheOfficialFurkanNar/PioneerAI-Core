@@ -15,7 +15,6 @@ from dotenv import load_dotenv
 PROJECT_ROOT = Path(__file__).parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
-
 def setup_logging(debug_mode: bool = False) -> None:
     """Configure professional logging setup"""
     log_level = logging.DEBUG if debug_mode else logging.INFO
@@ -34,7 +33,6 @@ def setup_logging(debug_mode: bool = False) -> None:
             logging.StreamHandler(sys.stdout)
         ]
     )
-
 
 def load_environment() -> dict:
     """Load and validate environment configuration"""
@@ -71,7 +69,6 @@ def load_environment() -> dict:
 
     return config
 
-
 def check_database_initialization() -> bool:
     """Check if database is properly initialized"""
     try:
@@ -90,7 +87,6 @@ def check_database_initialization() -> bool:
     except Exception as e:
         logging.error(f"Database initialization failed: {e}")
         return False
-
 
 def create_flask_app(config: dict, debug_mode: bool = False):
     """Create and configure Flask application"""
@@ -112,7 +108,6 @@ def create_flask_app(config: dict, debug_mode: bool = False):
     except Exception as e:
         logging.error(f"Failed to create Flask application: {e}")
         raise
-
 
 def add_static_file_routes(app):
     """Add static file serving routes for production"""
@@ -140,7 +135,6 @@ def add_static_file_routes(app):
 
     logging.info("Static file routes configured")
 
-
 def print_startup_info(host: str, port: int, debug_mode: bool):
     """Print professional startup information"""
     print("\n" + "=" * 60)
@@ -166,7 +160,6 @@ def print_startup_info(host: str, port: int, debug_mode: bool):
     print("=" * 60)
     print("🚀 Server starting...")
     print()
-
 
 def main():
     """Main application entry point"""
@@ -252,7 +245,6 @@ Examples:
         logger.error(f"Critical error: {e}")
         print(f"\n❌ Critical error: {e}")
         sys.exit(1)
-
 
 if __name__ == "__main__":
     main()
