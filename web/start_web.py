@@ -116,22 +116,22 @@ def add_static_file_routes(app):
     @app.route('/')
     def serve_landing():
         """Serve landing page as root"""
-        return send_from_directory('html', 'landing.html')
+        return send_from_directory('../html', 'landing.html')
 
     @app.route('/html/<path:filename>')
     def serve_html(filename):
         """Serve HTML files"""
-        return send_from_directory('html', filename)
+        return send_from_directory('../html', filename)
 
     @app.route('/css/<path:filename>')
     def serve_css(filename):
         """Serve CSS files"""
-        return send_from_directory('css', filename)
+        return send_from_directory('../css', filename)
 
     @app.route('/js/<path:filename>')
     def serve_js(filename):
         """Serve JavaScript files"""
-        return send_from_directory('js', filename)
+        return send_from_directory('../js', filename)
 
     logging.info("Static file routes configured")
 
