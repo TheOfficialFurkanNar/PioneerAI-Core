@@ -1,35 +1,41 @@
-// registry.js (JWT Token Based Registration)
+// js/registry.js - User Registration Functionality
 
-const API_ENDPOINT_REGISTER = "http://localhost:5000/register";
-const LOGIN_URL = "login.html";
+const API_ENDPOINT_REGISTER = "/auth/register";
+const LOGIN_URL = "/html/login.html";
 
-// Utility for safe DOM updates
+// Utility function for safe DOM updates
 function setSafeText(id, value, fallback = "") {
     const el = document.getElementById(id);
     if (el) el.innerText = value || fallback;
 }
 
-// Token management
-function saveToken(token) {
-    localStorage.setItem('auth_token', token);
-}
-
-// Input validation
+// Client-side validation functions
 function validateUsername(username) {
-    const pattern = /^[a-zA-Z0-9_]{3,20}$/;
-    return pattern.test(username);
+    if (!username || username.length < 3 || username.length > 20) {
+        return { valid: false, message: "Kullanıcı adı 3-20 karakter arasında olmalıdır." };
+    }
+    if (!/^[a-zA-Z0-9_]+$/.test(username)) {
+        return { valid: false, message: "Kullanıcı adı sadece harf, rakam ve alt çizgi içerebilir." };
+    }
+    return { valid: true };
 }
 
 function validateEmail(email) {
-    const pattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-    return pattern.test(email);
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email || !emailRegex.test(email)) {
+        return { valid: false, message: "Geçerli bir e-posta adresi giriniz." };
+    }
+    return { valid: true };
 }
 
 function validatePassword(password) {
-    return password.length >= 8;
+    if (!password || password.length < 8) {
+        return { valid: false, message: "Şifre en az 8 karakter olmalıdır." };
+    }
+    return { valid: true };
 }
 
-// Clear all error messages
+// Clear error messages
 function clearErrors() {
     setSafeText("regUnameError", "");
     setSafeText("regEmailError", "");
@@ -37,49 +43,60 @@ function clearErrors() {
     setSafeText("regServerError", "");
 }
 
+// Show success message
+function showSuccess(message) {
+    setSafeText("regServerError", `✅ ${message}`);
+    const errorEl = document.getElementById("regServerError");
+    if (errorEl) {
+        errorEl.style.color = "green";
+    }
+}
+
+// Show error message
+function showError(message) {
+    setSafeText("regServerError", `❌ ${message}`);
+    const errorEl = document.getElementById("regServerError");
+    if (errorEl) {
+        errorEl.style.color = "red";
+    }
+}
+
 // Main registration function
-async function registerUser() {
+async function registerUser(event) {
+    event.preventDefault();
+
     const username = document.getElementById("regUname")?.value.trim();
-    const email = document.getElementById("regEmail")?.value.trim().toLowerCase();
-    const password = document.getElementById("regPwd")?.value;
+    const email = document.getElementById("regEmail")?.value.trim();
+    const password = document.getElementById("regPwd")?.value.trim();
     const registerBtn = document.getElementById("registerBtn");
 
     // Clear previous errors
     clearErrors();
 
-    let hasErrors = false;
-
     // Client-side validation
-    if (!username) {
-        setSafeText("regUnameError", "Kullanıcı adı gereklidir");
-        hasErrors = true;
-    } else if (!validateUsername(username)) {
-        setSafeText("regUnameError", "Kullanıcı adı 3-20 karakter olmalı ve sadece harf, rakam, alt çizgi içermelidir");
-        hasErrors = true;
-    }
-
-    if (!email) {
-        setSafeText("regEmailError", "E-posta gereklidir");
-        hasErrors = true;
-    } else if (!validateEmail(email)) {
-        setSafeText("regEmailError", "Geçersiz e-posta formatı");
-        hasErrors = true;
-    }
-
-    if (!password) {
-        setSafeText("regPwdError", "Şifre gereklidir");
-        hasErrors = true;
-    } else if (!validatePassword(password)) {
-        setSafeText("regPwdError", "Şifre en az 8 karakter olmalıdır");
-        hasErrors = true;
-    }
-
-    if (hasErrors) {
+    const usernameValidation = validateUsername(username);
+    if (!usernameValidation.valid) {
+        setSafeText("regUnameError", usernameValidation.message);
         return;
     }
 
-    setSafeText("regServerError", "Kayıt oluşturuluyor...");
-    if (registerBtn) registerBtn.disabled = true;
+    const emailValidation = validateEmail(email);
+    if (!emailValidation.valid) {
+        setSafeText("regEmailError", emailValidation.message);
+        return;
+    }
+
+    const passwordValidation = validatePassword(password);
+    if (!passwordValidation.valid) {
+        setSafeText("regPwdError", passwordValidation.message);
+        return;
+    }
+
+    // Show loading state
+    if (registerBtn) {
+        registerBtn.disabled = true;
+        registerBtn.textContent = "Kayıt yapılıyor...";
+    }
 
     try {
         const response = await fetch(API_ENDPOINT_REGISTER, {
@@ -90,56 +107,61 @@ async function registerUser() {
 
         const data = await response.json();
 
-        if (response.ok && data.token) {
-            // Save token and user info
-            saveToken(data.token);
-            localStorage.setItem('user_info', JSON.stringify(data.user));
-            
-            setSafeText("regServerError", "✅ Kayıt başarılı! Giriş sayfasına yönlendiriliyorsunuz...");
-            
-            // Redirect to login page
+        if (response.ok && data.success) {
+            showSuccess("Kayıt başarılı! Giriş sayfasına yönlendiriliyorsunuz...");
+
+            // Redirect to login page after 2 seconds
             setTimeout(() => {
                 window.location.href = LOGIN_URL;
             }, 2000);
         } else {
-            setSafeText("regServerError", `❌ ${data.error || 'Kayıt başarısız!'}`);
+            // Handle server-side validation errors
+            const errorMessage = data.message || "Kayıt işlemi başarısız oldu.";
+            showError(errorMessage);
         }
-    } catch (err) {
-        console.error("Hata:", err);
-        setSafeText("regServerError", "⚠️ Sunucuya ulaşılamadı.");
+
+    } catch (error) {
+        console.error("Registration error:", error);
+        showError("Sunucuya ulaşılamadı. Lütfen tekrar deneyin.");
     } finally {
-       if (registerBtn) registerBtn.disabled = false;
+        // Reset button state
+        if (registerBtn) {
+            registerBtn.disabled = false;
+            registerBtn.textContent = "Kayıt Ol";
+        }
     }
 }
 
-// Event listeners
-document.addEventListener('DOMContentLoaded', function() {
-    // Register button click
-    const registerBtn = document.getElementById("registerBtn");
-    if (registerBtn) {
-        registerBtn.addEventListener("click", function(e) {
-            e.preventDefault();
-            registerUser();
-        });
-    }
-
-    // Form submission
+// DOM Content Loaded Event
+document.addEventListener("DOMContentLoaded", () => {
     const registerForm = document.getElementById("registerForm");
     if (registerForm) {
-        registerForm.addEventListener("submit", function(e) {
-            e.preventDefault();
-            registerUser();
+        registerForm.addEventListener("submit", registerUser);
+    }
+
+    // Real-time validation feedback
+    const usernameInput = document.getElementById("regUname");
+    const emailInput = document.getElementById("regEmail");
+    const passwordInput = document.getElementById("regPwd");
+
+    if (usernameInput) {
+        usernameInput.addEventListener("blur", () => {
+            const validation = validateUsername(usernameInput.value.trim());
+            setSafeText("regUnameError", validation.valid ? "" : validation.message);
         });
     }
 
-    // Enter key support
-    const passwordInput = document.getElementById("regPwd");
+    if (emailInput) {
+        emailInput.addEventListener("blur", () => {
+            const validation = validateEmail(emailInput.value.trim());
+            setSafeText("regEmailError", validation.valid ? "" : validation.message);
+        });
+    }
+
     if (passwordInput) {
-        passwordInput.addEventListener("keydown", function(e) {
-            if (e.key === "Enter") {
-                e.preventDefault();
-                registerUser();
-            }
+        passwordInput.addEventListener("blur", () => {
+            const validation = validatePassword(passwordInput.value.trim());
+            setSafeText("regPwdError", validation.valid ? "" : validation.message);
         });
     }
 });

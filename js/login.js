@@ -1,7 +1,8 @@
-// login.js (JWT Token Based Authentication)
+// js/login.js - JWT Token Based Authentication
 
-const API_ENDPOINT_LOGIN = "http://localhost:5000/login";
-const DASHBOARD_URL = "dashboard.html";
+const API_ENDPOINT_LOGIN = "/auth/login";
+const DASHBOARD_URL = "/html/dashboard.html";
+const AUTH_TOKEN_KEY = "auth_token";
 
 // Utility for safe DOM updates
 function setSafeText(id, value, fallback = "") {
@@ -9,39 +10,36 @@ function setSafeText(id, value, fallback = "") {
     if (el) el.innerText = value || fallback;
 }
 
-// Token management
-function saveToken(token) {
-    localStorage.setItem('auth_token', token);
+// Show error message
+function showError(message) {
+    setSafeText("serverError", `❌ ${message}`);
 }
 
-function getToken() {
-    return localStorage.getItem('auth_token');
-}
-
-function removeToken() {
-    localStorage.removeItem('auth_token');
+// Show success message
+function showSuccess(message) {
+    setSafeText("serverError", `✅ ${message}`);
 }
 
 // Main login function
-async function loginUser() {
+async function loginUser(event) {
+    event.preventDefault();
+
     const username = document.getElementById("uname")?.value.trim();
     const password = document.getElementById("pwd")?.value.trim();
-    const statusEl = document.getElementById("serverError");
     const loginBtn = document.getElementById("loginBtn");
 
-    // Clear previous errors
-    setSafeText("serverError", "");
-
-    // Accessibility: Announce status updates
-    if (statusEl) statusEl.setAttribute("aria-live", "polite");
-
     if (!username || !password) {
-        setSafeText("serverError", "Lütfen tüm alanları doldurun!");
+        showError("Lütfen tüm alanları doldurun!");
         return;
     }
 
+    // Show loading state
+    if (loginBtn) {
+        loginBtn.disabled = true;
+        loginBtn.textContent = "Giriş yapılıyor...";
+    }
+
     setSafeText("serverError", "Giriş yapılıyor...");
-    if (loginBtn) loginBtn.disabled = true;
 
     try {
         const response = await fetch(API_ENDPOINT_LOGIN, {
@@ -52,40 +50,63 @@ async function loginUser() {
 
         const data = await response.json();
 
-        if (response.ok && data.token) {
-            // Save token and user info
-            saveToken(data.token);
-            localStorage.setItem('user_info', JSON.stringify(data.user));
-            
-            setSafeText("serverError", "✅ Giriş başarılı! Yönlendiriliyorsunuz...");
-            
+        if (response.ok && data.success) {
+            // Store JWT token and login time in localStorage
+            localStorage.setItem(AUTH_TOKEN_KEY, data.token);
+            localStorage.setItem('login_time', new Date().getTime().toString());
+
+            showSuccess("Giriş başarılı! Yönlendiriliyorsunuz...");
+
             // Redirect to dashboard
             setTimeout(() => {
                 window.location.href = DASHBOARD_URL;
             }, 1200);
         } else {
-            setSafeText("serverError", `❌ ${data.error || 'Giriş başarısız!'}`);
+            const errorMessage = data.message || "Giriş başarısız!";
+            showError(errorMessage);
         }
     } catch (err) {
-        console.error("Hata:", err);
-        setSafeText("serverError", "⚠️ Sunucuya ulaşılamadı.");
+        console.error("Login error:", err);
+        showError("Sunucuya ulaşılamadı. Lütfen tekrar deneyin.");
     } finally {
-       if (loginBtn) loginBtn.disabled = false;
+        // Reset button state
+        if (loginBtn) {
+            loginBtn.disabled = false;
+            loginBtn.textContent = "Giriş Yap";
+        }
     }
 }
 
-// Support pressing Enter in password field to trigger login
-const pwdInput = document.getElementById("pwd");
-if (pwdInput) {
-    pwdInput.addEventListener("keydown", e => {
-        if (e.key === "Enter") {
-            loginUser();
+// Password toggle functionality
+function togglePassword() {
+    const pwdInput = document.getElementById("pwd");
+    const toggleBtn = document.getElementById("togglePassword");
+
+    if (pwdInput && toggleBtn) {
+        if (pwdInput.type === "password") {
+            pwdInput.type = "text";
+            toggleBtn.textContent = "Gizle";
+            toggleBtn.setAttribute("aria-expanded", "true");
+        } else {
+            pwdInput.type = "password";
+            toggleBtn.textContent = "Göster";
+            toggleBtn.setAttribute("aria-expanded", "false");
         }
-    });
+    }
 }
 
-// Attach login function to button
-const loginBtn = document.getElementById("loginBtn");
-if (loginBtn) {
-    loginBtn.addEventListener("click", loginUser);
-}
+// DOM Content Loaded Event
+document.addEventListener("DOMContentLoaded", () => {
+    const loginForm = document.getElementById("loginForm");
+    const toggleBtn = document.getElementById("togglePassword");
+
+    // Attach form submit event
+    if (loginForm) {
+        loginForm.addEventListener("submit", loginUser);
+    }
+
+    // Attach password toggle event
+    if (toggleBtn) {
+        toggleBtn.addEventListener("click", togglePassword);
+    }
+});

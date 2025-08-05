@@ -1,94 +1,129 @@
-// dashboard.js (JWT Token Based Authentication)
+// js/dashboard.js - JWT Token Based Dashboard
 
-const API_ENDPOINT_USERINFO = "http://localhost:5000/userinfo";
-const API_ENDPOINT_LOGOUT = "http://localhost:5000/logout";
-const AUTH_TOKEN_KEY = 'auth_token';
+const API_ENDPOINT_USERINFO = "/auth/userinfo";
+const API_ENDPOINT_LOGOUT = "/auth/logout";
+const AUTH_TOKEN_KEY = "auth_token";
+const LOGIN_URL = "/html/login.html";
+const CHAT_URL = "/html/index.html";
+const SESSION_TIMEOUT = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
 
-document.addEventListener("DOMContentLoaded", async () => {
-    const authToken = localStorage.getItem(AUTH_TOKEN_KEY);
-
-    // Utility: Set text or fallback
-    function setSafeText(id, value, fallback = "[Bilinmiyor]") {
-        const el = document.getElementById(id);
-        if (el) el.innerText = value || fallback;
-    }
-
-    // Show loading state
-    setSafeText("userName", "Yükleniyor...");
-    setSafeText("userEmail", "Yükleniyor...");
-    setSafeText("lastLogin", "Yükleniyor...");
-
-    if (!authToken) {
-        showAlert("Oturumunuz sona erdi. Lütfen tekrar giriş yapın.");
-        window.location.replace("login.html");
-        return;
-    }
-
-    try {
-        const response = await fetch(API_ENDPOINT_USERINFO, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${authToken}`
-            },
-            body: JSON.stringify({})
-        });
-
-        if (!response.ok) {
-            let message = `Kullanıcı bilgisi alınamadı. Hata kodu: ${response.status}`;
-            if(response.status === 401) {
-                message = "Yetkilendirme hatası. Lütfen tekrar giriş yapın.";
-            }
-            throw new Error(message);
-        }
-
-        const data = await response.json();
-
-        setSafeText("userName", data.user.username);
-        setSafeText("userEmail", data.user.email);
-        setSafeText("lastLogin", data.user.last_login ? 
-            new Date(data.user.last_login).toLocaleString('tr-TR') : 
-            "İlk giriş");
-
-    } catch (err) {
-        console.error("Hata:", err);
-        showAlert(err.message || "Kullanıcı bilgisi alınamadı. Lütfen tekrar giriş yapın.");
-        localStorage.removeItem(AUTH_TOKEN_KEY);
-        localStorage.removeItem('user_info');
-        window.location.replace("login.html");
-    }
-});
+// Utility: Set text or fallback
+function setSafeText(id, value, fallback = "[Bilinmiyor]") {
+    const el = document.getElementById(id);
+    if (el) el.innerText = value || fallback;
+}
 
 // Show alert function
 function showAlert(message) {
     alert(message);
 }
 
-// Logout function
-async function logout() {
-    if (confirm("Çıkış yapmak istediğinize emin misiniz?")) {
-        const authToken = localStorage.getItem(AUTH_TOKEN_KEY);
-        
-        if (authToken) {
-            try {
-                // Call logout endpoint
-                await fetch(API_ENDPOINT_LOGOUT, {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Authorization": `Bearer ${authToken}`
-                    }
-                });
-            } catch (err) {
-                console.error("Logout error:", err);
+// Check if user is authenticated
+function isAuthenticated() {
+    const token = localStorage.getItem(AUTH_TOKEN_KEY);
+    return token !== null && token !== "";
+}
+
+// Redirect to login if not authenticated
+function redirectToLogin() {
+    localStorage.removeItem(AUTH_TOKEN_KEY);
+    window.location.replace(LOGIN_URL);
+}
+
+// Load user information
+async function loadUserInfo() {
+    const authToken = localStorage.getItem(AUTH_TOKEN_KEY);
+
+    if (!authToken) {
+        showAlert("Oturumunuz sona erdi. Lütfen tekrar giriş yapın.");
+        redirectToLogin();
+        return;
+    }
+
+    // Show loading state
+    setSafeText("userName", "Yükleniyor...");
+    setSafeText("apiKey", "Yükleniyor...");
+    setSafeText("emailStatus", "Yükleniyor...");
+    setSafeText("lastLogin", "Yükleniyor...");
+
+    try {
+        const response = await fetch(API_ENDPOINT_USERINFO, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${authToken}`
             }
+        });
+
+        if (!response.ok) {
+            if (response.status === 401) {
+                showAlert("Oturumunuz sona erdi. Lütfen tekrar giriş yapın.");
+                redirectToLogin();
+                return;
+            }
+            throw new Error(`Kullanıcı bilgisi alınamadı. Hata kodu: ${response.status}`);
         }
-        
-        // Clear local storage
-        localStorage.removeItem(AUTH_TOKEN_KEY);
-        localStorage.removeItem('user_info');
-        
-        // Redirect to login
-        window.location.replace("login.html");
+
+        const data = await response.json();
+
+        if (data.success && data.user) {
+            setSafeText("userName", data.user.username);
+            setSafeText("apiKey", "API Anahtarı Ayarlandı");
+            setSafeText("emailStatus", "Aktif"); // Since we don't have email verification yet
+            setSafeText("lastLogin", data.user.last_login || "İlk giriş");
+        } else {
+            throw new Error("Kullanıcı bilgisi alınamadı.");
+        }
+
+    } catch (err) {
+        console.error("Dashboard error:", err);
+        showAlert(err.message || "Kullanıcı bilgisi alınamadı. Lütfen tekrar giriş yapın.");
+        redirectToLogin();
     }
 }
+
+// Logout function with server call
+async function logout() {
+    if (!confirm("Çıkış yapmak istediğinize emin misiniz?")) {
+        return;
+    }
+
+    const authToken = localStorage.getItem(AUTH_TOKEN_KEY);
+
+    if (authToken) {
+        try {
+            // Call logout endpoint
+            await fetch(API_ENDPOINT_LOGOUT, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${authToken}`
+                }
+            });
+        } catch (error) {
+            console.error("Logout error:", error);
+            // Continue with logout even if server call fails
+        }
+    }
+
+    // Remove token and redirect
+    localStorage.removeItem(AUTH_TOKEN_KEY);
+    window.location.replace(LOGIN_URL);
+}
+
+// Navigate to chat interface
+function goToChat() {
+    window.location.href = "/html/index.html";
+}
+
+// DOM Content Loaded Event
+document.addEventListener("DOMContentLoaded", () => {
+    // Check authentication on page load
+    if (!isAuthenticated()) {
+        redirectToLogin();
+        return;
+    }
+
+    // Load user information
+    loadUserInfo();
+});

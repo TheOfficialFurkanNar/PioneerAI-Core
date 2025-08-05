@@ -1,163 +1,192 @@
 # web/database.py
 
 import sqlite3
-import bcrypt
 import os
+import bcrypt
 from datetime import datetime
 from typing import Optional, Dict, Any
-from contextlib import contextmanager
 
-# 🗄️ Veritabanı dosya yolu
-DB_PATH = os.path.join("data", "users.db")
+DATABASE_PATH = "data/users.db"
 
-class User:
-    """Kullanıcı modeli"""
-    def __init__(self, id: int = None, username: str = None, email: str = None, 
-                 password_hash: str = None, created_at: str = None, last_login: str = None):
-        self.id = id
-        self.username = username
-        self.email = email
-        self.password_hash = password_hash
-        self.created_at = created_at
-        self.last_login = last_login
-
-    def to_dict(self) -> Dict[str, Any]:
-        """Kullanıcı bilgilerini dict olarak döndür (şifre hariç)"""
-        return {
-            "id": self.id,
-            "username": self.username,
-            "email": self.email,
-            "created_at": self.created_at,
-            "last_login": self.last_login
-        }
-
-@contextmanager
-def get_db_connection():
-    """Veritabanı bağlantısı context manager'ı"""
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row  # Dict-like access
-    try:
-        yield conn
-    finally:
-        conn.close()
 
 def init_database():
-    """Veritabanını başlat ve users tablosunu oluştur"""
-    # Veri dizinini oluştur
-    os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
-    
-    with get_db_connection() as conn:
-        cursor = conn.cursor()
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS users (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                username TEXT UNIQUE NOT NULL,
-                email TEXT UNIQUE NOT NULL,
-                password_hash TEXT NOT NULL,
-                created_at TEXT NOT NULL,
-                last_login TEXT
-            )
-        ''')
-        conn.commit()
+    """Veritabanını başlat ve kullanıcı tablosunu oluştur"""
+    # data dizinini oluştur
+    os.makedirs(os.path.dirname(DATABASE_PATH), exist_ok=True)
+
+    conn = sqlite3.connect(DATABASE_PATH)
+    cursor = conn.cursor()
+
+    # Kullanıcı tablosunu oluştur
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT UNIQUE NOT NULL,
+            email TEXT UNIQUE NOT NULL,
+            password_hash TEXT NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            last_login TIMESTAMP
+        )
+    ''')
+
+    conn.commit()
+    conn.close()
+
 
 def hash_password(password: str) -> str:
     """Şifreyi hash'le"""
     salt = bcrypt.gensalt()
     return bcrypt.hashpw(password.encode('utf-8'), salt).decode('utf-8')
 
-def verify_password(password: str, password_hash: str) -> bool:
-    """Şifreyi doğrula"""
-    return bcrypt.checkpw(password.encode('utf-8'), password_hash.encode('utf-8'))
 
-def create_user(username: str, email: str, password: str) -> Optional[User]:
+def verify_password(password: str, hashed: str) -> bool:
+    """Şifreyi doğrula"""
+    return bcrypt.checkpw(password.encode('utf-8'), hashed.encode('utf-8'))
+
+
+def create_user(username: str, email: str, password: str) -> Dict[str, Any]:
     """Yeni kullanıcı oluştur"""
     try:
+        conn = sqlite3.connect(DATABASE_PATH)
+        cursor = conn.cursor()
+
+        # Kullanıcı adı ve email kontrolü
+        cursor.execute("SELECT id FROM users WHERE username = ? OR email = ?", (username, email))
+        if cursor.fetchone():
+            return {"success": False, "message": "Kullanıcı adı veya email zaten kullanımda"}
+
+        # Şifreyi hash'le ve kullanıcıyı oluştur
         password_hash = hash_password(password)
-        created_at = datetime.utcnow().isoformat()
-        
-        with get_db_connection() as conn:
-            cursor = conn.cursor()
-            cursor.execute('''
-                INSERT INTO users (username, email, password_hash, created_at)
-                VALUES (?, ?, ?, ?)
-            ''', (username, email, password_hash, created_at))
-            conn.commit()
-            
-            user_id = cursor.lastrowid
-            return User(id=user_id, username=username, email=email, 
-                       password_hash=password_hash, created_at=created_at)
-    except sqlite3.IntegrityError:
-        return None  # Kullanıcı adı veya email zaten mevcut
+        cursor.execute(
+            "INSERT INTO users (username, email, password_hash) VALUES (?, ?, ?)",
+            (username, email, password_hash)
+        )
 
-def get_user_by_username(username: str) -> Optional[User]:
-    """Kullanıcı adına göre kullanıcı getir"""
-    with get_db_connection() as conn:
-        cursor = conn.cursor()
-        cursor.execute('SELECT * FROM users WHERE username = ?', (username,))
-        row = cursor.fetchone()
-        
-        if row:
-            return User(
-                id=row['id'],
-                username=row['username'],
-                email=row['email'],
-                password_hash=row['password_hash'],
-                created_at=row['created_at'],
-                last_login=row['last_login']
-            )
-        return None
-
-def get_user_by_email(email: str) -> Optional[User]:
-    """Email'e göre kullanıcı getir"""
-    with get_db_connection() as conn:
-        cursor = conn.cursor()
-        cursor.execute('SELECT * FROM users WHERE email = ?', (email,))
-        row = cursor.fetchone()
-        
-        if row:
-            return User(
-                id=row['id'],
-                username=row['username'],
-                email=row['email'],
-                password_hash=row['password_hash'],
-                created_at=row['created_at'],
-                last_login=row['last_login']
-            )
-        return None
-
-def get_user_by_id(user_id: int) -> Optional[User]:
-    """ID'ye göre kullanıcı getir"""
-    with get_db_connection() as conn:
-        cursor = conn.cursor()
-        cursor.execute('SELECT * FROM users WHERE id = ?', (user_id,))
-        row = cursor.fetchone()
-        
-        if row:
-            return User(
-                id=row['id'],
-                username=row['username'],
-                email=row['email'],
-                password_hash=row['password_hash'],
-                created_at=row['created_at'],
-                last_login=row['last_login']
-            )
-        return None
-
-def update_last_login(user_id: int):
-    """Son giriş zamanını güncelle"""
-    last_login = datetime.utcnow().isoformat()
-    with get_db_connection() as conn:
-        cursor = conn.cursor()
-        cursor.execute('UPDATE users SET last_login = ? WHERE id = ?', (last_login, user_id))
+        user_id = cursor.lastrowid
         conn.commit()
+        conn.close()
 
-def authenticate_user(username: str, password: str) -> Optional[User]:
+        return {
+            "success": True,
+            "message": "Kullanıcı başarıyla oluşturuldu",
+            "user_id": user_id
+        }
+
+    except sqlite3.Error as e:
+        return {"success": False, "message": f"Veritabanı hatası: {str(e)}"}
+
+
+def authenticate_user(username: str, password: str) -> Dict[str, Any]:
     """Kullanıcı kimlik doğrulaması"""
-    user = get_user_by_username(username)
-    if user and verify_password(password, user.password_hash):
-        update_last_login(user.id)
-        return user
-    return None
+    try:
+        conn = sqlite3.connect(DATABASE_PATH)
+        cursor = conn.cursor()
 
-# Veritabanını başlat
-init_database()
+        cursor.execute(
+            "SELECT id, username, email, password_hash FROM users WHERE username = ?",
+            (username,)
+        )
+        user = cursor.fetchone()
+
+        if not user:
+            return {"success": False, "message": "Kullanıcı bulunamadı"}
+
+        user_id, username, email, password_hash = user
+
+        if not verify_password(password, password_hash):
+            return {"success": False, "message": "Geçersiz şifre"}
+
+        # Son giriş zamanını güncelle
+        cursor.execute(
+            "UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = ?",
+            (user_id,)
+        )
+        conn.commit()
+        conn.close()
+
+        return {
+            "success": True,
+            "message": "Giriş başarılı",
+            "user": {
+                "id": user_id,
+                "username": username,
+                "email": email
+            }
+        }
+
+    except sqlite3.Error as e:
+        return {"success": False, "message": f"Veritabanı hatası: {str(e)}"}
+
+
+def get_user_by_id(user_id: int) -> Optional[Dict[str, Any]]:
+    """ID ile kullanıcı bilgilerini getir"""
+    try:
+        conn = sqlite3.connect(DATABASE_PATH)
+        cursor = conn.cursor()
+
+        cursor.execute(
+            "SELECT id, username, email, created_at, last_login FROM users WHERE id = ?",
+            (user_id,)
+        )
+        user = cursor.fetchone()
+        conn.close()
+
+        if user:
+            return {
+                "id": user[0],
+                "username": user[1],
+                "email": user[2],
+                "created_at": user[3],
+                "last_login": user[4]
+            }
+        return None
+
+    except sqlite3.Error:
+        return None
+
+
+def validate_username(username: str) -> Dict[str, Any]:
+    """Kullanıcı adı doğrulaması"""
+    if not username:
+        return {"valid": False, "message": "Kullanıcı adı boş olamaz"}
+    if len(username) < 3:
+        return {"valid": False, "message": "Kullanıcı adı en az 3 karakter olmalıdır"}
+    if len(username) > 20:
+        return {"valid": False, "message": "Kullanıcı adı en fazla 20 karakter olabilir"}
+    if not username.replace("_", "").replace("-", "").isalnum():
+        return {"valid": False, "message": "Kullanıcı adı sadece harf, rakam, _ ve - içerebilir"}
+    return {"valid": True}
+
+
+def validate_email(email: str) -> Dict[str, Any]:
+    """Email doğrulaması"""
+    import re
+    if not email:
+        return {"valid": False, "message": "Email boş olamaz"}
+
+    email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+    if not re.match(email_pattern, email):
+        return {"valid": False, "message": "Geçersiz email formatı"}
+    return {"valid": True}
+
+
+def validate_password(password: str) -> Dict[str, Any]:
+    """Şifre doğrulaması"""
+    if not password:
+        return {"valid": False, "message": "Şifre boş olamaz"}
+    if len(password) < 8:
+        return {"valid": False, "message": "Şifre en az 8 karakter olmalıdır"}
+    return {"valid": True}
+
+
+def test_database_connection() -> bool:
+    """Test database connection and basic functionality"""
+    try:
+        conn = sqlite3.connect(DATABASE_PATH)
+        cursor = conn.cursor()
+        cursor.execute("SELECT COUNT(*) FROM users")
+        cursor.fetchone()
+        conn.close()
+        return True
+    except sqlite3.Error:
+        return False

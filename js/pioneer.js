@@ -1,4 +1,4 @@
-// js/pioneer.js (Improved with Authentication)
+// js/pioneer.js - JWT Authenticated Chat Interface
 
 // Element referansları
 const sendBtn = document.getElementById("sendBtn");
@@ -7,58 +7,79 @@ const styleSelect = document.getElementById("summaryStyle");
 const chatWindow = document.getElementById("chatWindow");
 const streamToggle = document.getElementById("streamToggle");
 
-const API_ENDPOINT_SUMMARY = "http://localhost:5000/ask/summary";
-const API_ENDPOINT_STREAM = "http://localhost:5000/ask/summary/stream";
+const API_ENDPOINT_SUMMARY = "/ask/summary";
+const API_ENDPOINT_STREAM = "/ask/summary/stream";
 const AUTH_TOKEN_KEY = "auth_token";
+const LOGIN_URL = "/html/login.html";
+const SESSION_TIMEOUT = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
 
-// Check authentication on page load
-document.addEventListener('DOMContentLoaded', function() {
+// Check if user is authenticated and session is valid
+function isAuthenticated() {
     const token = localStorage.getItem(AUTH_TOKEN_KEY);
-    if (!token) {
-        alert('Lütfen önce giriş yapın.');
-        window.location.href = 'login.html';
-        return;
-    }
-    
-    // Add logout button to chat interface
-    addLogoutButton();
-});
+    const loginTime = localStorage.getItem('login_time');
 
-// Add logout functionality to chat interface
-function addLogoutButton() {
-    const container = document.querySelector('.container');
-    if (container && !document.getElementById('logoutBtn')) {
-        const logoutBtn = document.createElement('button');
-        logoutBtn.id = 'logoutBtn';
-        logoutBtn.textContent = 'Çıkış Yap';
-        logoutBtn.style.cssText = 'position: absolute; top: 20px; right: 20px; padding: 8px 16px; background-color: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer;';
-        logoutBtn.onclick = logout;
-        container.appendChild(logoutBtn);
+    if (!token || !loginTime) {
+        return false;
     }
+
+    // Check if session has expired
+    const currentTime = new Date().getTime();
+    const sessionAge = currentTime - parseInt(loginTime);
+
+    if (sessionAge > SESSION_TIMEOUT) {
+        // Session expired, clear storage
+        localStorage.removeItem(AUTH_TOKEN_KEY);
+        localStorage.removeItem('login_time');
+        return false;
+    }
+
+    return true;
+}
+
+// Redirect to login if not authenticated
+function redirectToLogin() {
+    localStorage.removeItem(AUTH_TOKEN_KEY);
+    window.location.replace(LOGIN_URL);
+}
+
+// Navigate to dashboard
+function goToDashboard() {
+    window.location.href = "/html/dashboard.html";
 }
 
 // Logout function
-function logout() {
-    if (confirm('Çıkış yapmak istediğinize emin misiniz?')) {
-        localStorage.removeItem(AUTH_TOKEN_KEY);
-        localStorage.removeItem('user_info');
-        window.location.href = 'login.html';
+async function logout() {
+    if (!confirm("Çıkış yapmak istediğinize emin misiniz?")) {
+        return;
     }
+
+    const authToken = localStorage.getItem(AUTH_TOKEN_KEY);
+
+    if (authToken) {
+        try {
+            await fetch("/auth/logout", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${authToken}`
+                }
+            });
+        } catch (error) {
+            console.error("Logout error:", error);
+        }
+    }
+
+    localStorage.removeItem(AUTH_TOKEN_KEY);
+    window.location.replace(LOGIN_URL);
 }
 
-// Get authentication token
-function getAuthToken() {
-    return localStorage.getItem(AUTH_TOKEN_KEY);
-}
-
-// Function to get the user ID from stored user info
-function getUserId() {
-    const userInfo = localStorage.getItem('user_info');
-    if (userInfo) {
-        const user = JSON.parse(userInfo);
-        return user.id || user.username || 'guest';
-    }
-    return 'guest';
+// Get authentication headers
+function getAuthHeaders() {
+    const token = localStorage.getItem(AUTH_TOKEN_KEY);
+    return {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+    };
 }
 
 //Template for the message
@@ -79,6 +100,13 @@ function appendMessage(who, text) {
 
 // Common function to send the request
 async function sendMessage(endpoint, userMessage, isStream = false) {
+    // Check authentication before sending
+    if (!isAuthenticated()) {
+        appendMessage("bot", "⚠️ Oturumunuz sona erdi. Lütfen tekrar giriş yapın.");
+        setTimeout(() => redirectToLogin(), 2000);
+        return;
+    }
+
     appendMessage("user", userMessage);
     let botEl;
 
@@ -92,19 +120,10 @@ async function sendMessage(endpoint, userMessage, isStream = false) {
     chatWindow.scrollTop = chatWindow.scrollHeight;
 
     try {
-        const token = getAuthToken();
-        if (!token) {
-            throw new Error('Authentication required');
-        }
-
         const response = await fetch(endpoint, {
             method: "POST",
-            headers: { 
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${token}`
-            },
+            headers: getAuthHeaders(),
             body: JSON.stringify({
-                user_id: getUserId(),
                 prompt: userMessage,
                 style: styleSelect.value
             })
@@ -113,10 +132,13 @@ async function sendMessage(endpoint, userMessage, isStream = false) {
         if (!response.ok) {
             if (response.status === 401) {
                 // Token expired or invalid
-                localStorage.removeItem(AUTH_TOKEN_KEY);
-                localStorage.removeItem('user_info');
-                alert('Oturumunuz sona erdi. Lütfen tekrar giriş yapın.');
-                window.location.href = 'login.html';
+                if (isStream && botEl) {
+                    botEl.textContent = "⚠️ Oturumunuz sona erdi. Giriş sayfasına yönlendiriliyorsunuz...";
+                } else if (!isStream) {
+                    chatWindow.lastElementChild.remove();
+                    appendMessage("bot", "⚠️ Oturumunuz sona erdi. Giriş sayfasına yönlendiriliyorsunuz...");
+                }
+                setTimeout(() => redirectToLogin(), 2000);
                 return;
             }
             throw new Error(`HTTP error! status: ${response.status}`);
@@ -143,10 +165,10 @@ async function sendMessage(endpoint, userMessage, isStream = false) {
     } catch (error) {
         console.error("Error:", error);
         if (isStream && botEl) {
-            botEl.textContent = "⚠️ Error: Could not retrieve response.";
+            botEl.textContent = "⚠️ Hata: Yanıt alınamadı. Lütfen tekrar deneyin.";
         } else if (!isStream) {
             chatWindow.lastElementChild.remove(); // Remove "typing..."
-            appendMessage("bot", "⚠️ Error: Could not retrieve response.");
+            appendMessage("bot", "⚠️ Hata: Yanıt alınamadı. Lütfen tekrar deneyin.");
         }
     }
 }
@@ -168,15 +190,57 @@ async function sendStreamSummary() {
 }
 
 
-// Buton Click Event
-sendBtn.addEventListener("click", () => {
+// Handle form submission
+function handleSubmit(event) {
+    event.preventDefault();
+
     const userMessage = messageInput.value.trim();
-        if (!userMessage) return;
+    if (!userMessage) return;
 
     if (streamToggle.checked) {
         sendStreamSummary();
     } else {
         sendSummary();
     }
-     messageInput.value = ""; //Clear input after sending.
+    messageInput.value = ""; // Clear input after sending
+}
+
+// DOM Content Loaded Event
+document.addEventListener("DOMContentLoaded", () => {
+    // Check authentication on page load
+    if (!isAuthenticated()) {
+        appendMessage("bot", "⚠️ Lütfen önce giriş yapın.");
+        setTimeout(() => redirectToLogin(), 2000);
+        return;
+    }
+
+    // Show navigation bar for authenticated users
+    const navBar = document.getElementById("navBar");
+    if (navBar) {
+        navBar.style.display = "block";
+    }
+
+    // Add welcome message
+    appendMessage("bot", "Merhaba! Size nasıl yardımcı olabilirim?");
+
+    // Attach form submit event
+    const chatForm = document.getElementById("chatForm");
+    if (chatForm) {
+        chatForm.addEventListener("submit", handleSubmit);
+    }
+
+    // Attach button click event as fallback
+    if (sendBtn) {
+        sendBtn.addEventListener("click", handleSubmit);
+    }
+
+    // Handle Enter key in textarea
+    if (messageInput) {
+        messageInput.addEventListener("keydown", (e) => {
+            if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                handleSubmit(e);
+            }
+        });
+    }
 });
