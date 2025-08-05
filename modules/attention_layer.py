@@ -1,3 +1,5 @@
+# modules/attention_layer.py
+
 import math
 import torch
 import torch.nn as nn
@@ -25,11 +27,11 @@ class ScaledDotProductAttention(nn.Module):
         self.logger = logging.getLogger(__name__)
 
     def forward(
-        self,
-        query: torch.Tensor,
-        key: torch.Tensor,
-        value: torch.Tensor,
-        mask: Optional[torch.Tensor] = None
+            self,
+            query: torch.Tensor,
+            key: torch.Tensor,
+            value: torch.Tensor,
+            mask: Optional[torch.Tensor] = None
     ) -> Tuple[torch.Tensor, torch.Tensor]:
         """
         Forward pass for scaled dot-product attention
@@ -71,10 +73,10 @@ class MultiHeadAttention(nn.Module):
     """
 
     def __init__(
-        self,
-        d_model: int = EMBEDDING_DIM,
-        num_heads: int = ATTENTION_HEADS,
-        dropout: float = DROPOUT_RATE
+            self,
+            d_model: int = EMBEDDING_DIM,
+            num_heads: int = ATTENTION_HEADS,
+            dropout: float = DROPOUT_RATE
     ):
         super(MultiHeadAttention, self).__init__()
 
@@ -93,15 +95,16 @@ class MultiHeadAttention(nn.Module):
         # Attention mechanism
         self.attention = ScaledDotProductAttention(self.d_k, dropout)
         self.dropout = nn.Dropout(dropout)
-        self.layer_norm = nn.LayerNorm(d_model)  # Layer Normalization
+        self.layer_norm = nn.LayerNorm(d_model)
+
         self.logger = logging.getLogger(__name__)
 
     def forward(
-        self,
-        query: torch.Tensor,
-        key: torch.Tensor,
-        value: torch.Tensor,
-        mask: Optional[torch.Tensor] = None
+            self,
+            query: torch.Tensor,
+            key: torch.Tensor,
+            value: torch.Tensor,
+            mask: Optional[torch.Tensor] = None
     ) -> torch.Tensor:
         """
         Forward pass for multi-head attention
@@ -134,11 +137,11 @@ class MultiHeadAttention(nn.Module):
             batch_size, seq_len, self.d_model
         )
 
-        attn_output = self.w_o(attn_output)  # Apply the output linear layer
-        attn_output = self.dropout(attn_output)  # Apply dropout
+        output = self.w_o(attn_output)
+        output = self.dropout(output)
 
         # 4. Add residual connection and layer normalization
-        output = self.layer_norm(attn_output + residual)  # LayerNorm after residual
+        output = self.layer_norm(output + residual)
 
         return output
 
@@ -151,10 +154,10 @@ class PositionalEncoding(nn.Module):
     """
 
     def __init__(
-        self,
-        d_model: int = EMBEDDING_DIM,
-        max_len: int = SEQUENCE_LENGTH,
-        encoding_type: str = "fixed"
+            self,
+            d_model: int = EMBEDDING_DIM,
+            max_len: int = SEQUENCE_LENGTH,
+            encoding_type: str = "fixed"
     ):
         super(PositionalEncoding, self).__init__()
 
@@ -167,7 +170,7 @@ class PositionalEncoding(nn.Module):
             position = torch.arange(0, max_len, dtype=torch.float).unsqueeze(1)
 
             div_term = torch.exp(torch.arange(0, d_model, 2).float() *
-                               (-math.log(10000.0) / d_model))
+                                 (-math.log(10000.0) / d_model))
 
             pe[:, 0::2] = torch.sin(position * div_term)
             pe[:, 1::2] = torch.cos(position * div_term)

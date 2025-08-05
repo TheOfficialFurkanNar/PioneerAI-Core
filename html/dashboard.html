@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">  <!-- For responsive design -->
     <title>PioneerAI Panel</title>
-    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
     <div class="dashboard-container">
@@ -16,11 +16,12 @@
             <div class="dashboard-box">
                 <h2>Hoş Geldin, <span id="userName">[Kullanıcı Adı Yükleniyor...]</span>!</h2>  <!-- Loading Placeholder -->
 
-                <p><strong>E-Posta:</strong> <span id="userEmail">[E-Posta Yükleniyor...]</span></p>  <!-- Loading Placeholder -->
+                <p><strong>API Anahtarın:</strong> <span id="apiKey">[API Anahtarı Yükleniyor...]</span></p>  <!-- Loading Placeholder -->
+                <p><strong>E-Posta Durumu:</strong> <span id="emailStatus">[E-Posta Durumu Yükleniyor...]</span></p>  <!-- Loading Placeholder -->
                 <p><strong>Son Giriş:</strong> <span id="lastLogin">[Son Giriş Tarihi Yükleniyor...]</span></p>  <!-- Loading Placeholder -->
 
-                <div style="margin-top: 20px;">
-                    <a href="chat.html" style="display: inline-block; padding: 10px 20px; background-color: #4caf50; color: white; text-decoration: none; border-radius: 6px; margin-right: 10px;">Sohbete Git</a>
+                <div class="dashboard-actions">
+                    <button onclick="goToChat()">Sohbete Git</button>
                     <button onclick="logout()">Çıkış Yap</button>
                 </div>
             </div>
@@ -31,6 +32,6 @@
         </footer>
     </div>
 
-    <script src="../js/dashboard.js"></script>
+    <script src="/js/dashboard.js"></script>
 </body>
 </html>
