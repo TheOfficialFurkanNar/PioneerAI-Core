@@ -64,52 +64,88 @@ function showError(message) {
 // Main registration function
 async function registerUser(event) {
     event.preventDefault();
+<<<<<<< HEAD
 
+=======
+
+>>>>>>> 0285be0883ab9d10884b57d1097c61f567b39165
     const username = document.getElementById("regUname")?.value.trim();
     const email = document.getElementById("regEmail")?.value.trim();
     const password = document.getElementById("regPwd")?.value.trim();
     const registerBtn = document.getElementById("registerBtn");
+<<<<<<< HEAD
 
     // Clear previous errors
     clearErrors();
 
+=======
+
+    // Clear previous errors
+    clearErrors();
+
+>>>>>>> 0285be0883ab9d10884b57d1097c61f567b39165
     // Client-side validation
     const usernameValidation = validateUsername(username);
     if (!usernameValidation.valid) {
         setSafeText("regUnameError", usernameValidation.message);
         return;
     }
+<<<<<<< HEAD
 
+=======
+
+>>>>>>> 0285be0883ab9d10884b57d1097c61f567b39165
     const emailValidation = validateEmail(email);
     if (!emailValidation.valid) {
         setSafeText("regEmailError", emailValidation.message);
         return;
     }
+<<<<<<< HEAD
 
+=======
+
+>>>>>>> 0285be0883ab9d10884b57d1097c61f567b39165
     const passwordValidation = validatePassword(password);
     if (!passwordValidation.valid) {
         setSafeText("regPwdError", passwordValidation.message);
         return;
     }
+<<<<<<< HEAD
 
+=======
+
+>>>>>>> 0285be0883ab9d10884b57d1097c61f567b39165
     // Show loading state
     if (registerBtn) {
         registerBtn.disabled = true;
         registerBtn.textContent = "Kayıt yapılıyor...";
     }
+<<<<<<< HEAD
 
+=======
+
+>>>>>>> 0285be0883ab9d10884b57d1097c61f567b39165
     try {
         const response = await fetch(API_ENDPOINT_REGISTER, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ username, email, password })
         });
+<<<<<<< HEAD
 
         const data = await response.json();
 
         if (response.ok && data.success) {
             showSuccess("Kayıt başarılı! Giriş sayfasına yönlendiriliyorsunuz...");
 
+=======
+
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+            showSuccess("Kayıt başarılı! Giriş sayfasına yönlendiriliyorsunuz...");
+
+>>>>>>> 0285be0883ab9d10884b57d1097c61f567b39165
             // Redirect to login page after 2 seconds
             setTimeout(() => {
                 window.location.href = LOGIN_URL;
@@ -119,7 +155,11 @@ async function registerUser(event) {
             const errorMessage = data.message || "Kayıt işlemi başarısız oldu.";
             showError(errorMessage);
         }
+<<<<<<< HEAD
 
+=======
+
+>>>>>>> 0285be0883ab9d10884b57d1097c61f567b39165
     } catch (error) {
         console.error("Registration error:", error);
         showError("Sunucuya ulaşılamadı. Lütfen tekrar deneyin.");
@@ -138,26 +178,42 @@ document.addEventListener("DOMContentLoaded", () => {
     if (registerForm) {
         registerForm.addEventListener("submit", registerUser);
     }
+<<<<<<< HEAD
 
+=======
+
+>>>>>>> 0285be0883ab9d10884b57d1097c61f567b39165
     // Real-time validation feedback
     const usernameInput = document.getElementById("regUname");
     const emailInput = document.getElementById("regEmail");
     const passwordInput = document.getElementById("regPwd");
+<<<<<<< HEAD
 
+=======
+
+>>>>>>> 0285be0883ab9d10884b57d1097c61f567b39165
     if (usernameInput) {
         usernameInput.addEventListener("blur", () => {
             const validation = validateUsername(usernameInput.value.trim());
             setSafeText("regUnameError", validation.valid ? "" : validation.message);
         });
     }
+<<<<<<< HEAD
 
+=======
+
+>>>>>>> 0285be0883ab9d10884b57d1097c61f567b39165
     if (emailInput) {
         emailInput.addEventListener("blur", () => {
             const validation = validateEmail(emailInput.value.trim());
             setSafeText("regEmailError", validation.valid ? "" : validation.message);
         });
     }
+<<<<<<< HEAD
 
+=======
+
+>>>>>>> 0285be0883ab9d10884b57d1097c61f567b39165
     if (passwordInput) {
         passwordInput.addEventListener("blur", () => {
             const validation = validatePassword(passwordInput.value.trim());

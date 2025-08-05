@@ -3,13 +3,55 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<<<<<<< HEAD
+  <title>PioneerAI - Yapay Zeka Asistanı</title>
+  <link rel="stylesheet" href="../css/style.css" />
+</head>
+<body>
+  <div class="landing-container">
+    <div class="landing-content">
+      <header>
+        <h1>🧠 PioneerAI</h1>
+        <p>Gelişmiş Yapay Zeka Asistanınız</p>
+      </header>
+
+      <main>
+        <div class="feature-box">
+          <h2>Hoş Geldiniz!</h2>
+          <p>PioneerAI ile akıllı sohbetler yapın, sorularınızı sorun ve farklı özet stillerinde yanıtlar alın.</p>
+
+          <div class="auth-buttons">
+            <a href="login.html" class="btn btn-primary">Giriş Yap</a>
+            <a href="registry.html" class="btn btn-secondary">Kayıt Ol</a>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    // Check if user is already logged in and redirect to chat
+    document.addEventListener('DOMContentLoaded', function() {
+      const token = localStorage.getItem('auth_token');
+      if (token) {
+        window.location.href = 'chat.html';
+      }
+    });
+  </script>
+=======
   <title>PioneerChat 🧠</title>
-  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="/css/style.css" />
 </head>
 <body>
   <div class="container">
     <main>
       <h2>PioneerChat 🧠</h2>
+
+      <!-- Navigation Bar -->
+      <div class="nav-bar" id="navBar" style="display: none;">
+        <button onclick="goToDashboard()">Dashboard</button>
+        <button onclick="logout()">Çıkış Yap</button>
+      </div>
 
       <!-- Sohbet Kutusu -->
       <div id="chatWindow" class="chat-box" aria-live="polite"></div>  <!-- aria-live for accessibility -->
@@ -44,6 +86,7 @@
   </div>
 
   <!-- PioneerChat Modülü -->
-  <script type="module" src="js/pioneer.js"></script>
+  <script type="module" src="/js/pioneer.js"></script>
+>>>>>>> 0285be0883ab9d10884b57d1097c61f567b39165
 </body>
 </html>
