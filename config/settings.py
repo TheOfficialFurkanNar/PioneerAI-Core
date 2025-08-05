@@ -53,6 +53,23 @@ MAX_CONTEXT_TOKENS  = int(os.getenv("MAX_CONTEXT_TOKENS", 2000))
 ENCODING     = os.getenv("ENCODING", "utf-8")
 ENSURE_ASCII = os.getenv("ENSURE_ASCII", "False").lower() == "true"
 
+# 🧠 Attention Mechanism Configuration
+ATTENTION_HEADS = int(os.getenv("ATTENTION_HEADS", 8))
+EMBEDDING_DIM = int(os.getenv("EMBEDDING_DIM", 512))
+SEQUENCE_LENGTH = int(os.getenv("SEQUENCE_LENGTH", 1024))
+DROPOUT_RATE = float(os.getenv("DROPOUT_RATE", 0.1))
+LEARNING_RATE = float(os.getenv("LEARNING_RATE", 0.0001))
+NUM_ENCODER_LAYERS = int(os.getenv("NUM_ENCODER_LAYERS", 6))
+NUM_DECODER_LAYERS = int(os.getenv("NUM_DECODER_LAYERS", 6))
+PRE_TRAINED_EMBEDDINGS = os.getenv("PRE_TRAINED_EMBEDDINGS", "")
+POSITIONAL_ENCODING_TYPE = os.getenv("POSITIONAL_ENCODING_TYPE", "fixed")
+HYBRID_MODE_THRESHOLD = float(os.getenv("HYBRID_MODE_THRESHOLD", 0.8))
+CACHE_SIZE = int(os.getenv("CACHE_SIZE", 1000))
+
+# 🔄 Attention Processing Mode
+ATTENTION_MODE = os.getenv("ATTENTION_MODE", "hybrid")  # "local", "openai", "hybrid"
+ATTENTION_CACHE_ENABLED = os.getenv("ATTENTION_CACHE_ENABLED", "True").lower() == "true"
+
 def get_model_name(fallback: str = "gpt-4o") -> str:
     """
     Dönülecek model adı:
