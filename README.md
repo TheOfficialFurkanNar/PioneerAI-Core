@@ -1,17 +1,66 @@
-# PioneerAI 1.0   
-Fairness-aware simulation framework for analyzing education systems using adaptive AI logic.
+# 🧠 PioneerAI v1.0 – Adaptive Simulation & Intelligence Framework
+PioneerAI is a modular, memory-driven AI framework designed for scalable simulation, secure communication, and ethical orchestration. Initially focused on education fairness, its architecture now supports advanced task routing, adaptive memory, JWT-secured APIs, and asynchronous workflows suitable for research-grade applications.
 
-##  Overview  
-PioneerAI is a modular AI engine designed to simulate educational environments based on fairness metrics.  
-It evaluates systemic inequalities and routes simulation tasks using data-driven mechanisms.
+🚀 Core Capabilities
+| Feature | Description | 
+| Orchestration Engine | Intent-aware, token-sensitive routing of AI logic | 
+| Memory Management | Adaptive context tracking via JSON/Redis + attention decay policies | 
+| Authentication | Secure JWT-based login system with salted password hashing | 
+| Model Routing | Dynamic selection between GPT‑4o and GPT‑3.5-turbo via token budget | 
+| Language Autonomy | Tone shaping, ethical filtering, and semantic HTML surface generation | 
+| Simulation Modules | Fairness metrics (Gini, accessibility ratios), system modeling, report generation | 
+| Token Intelligence | TokenCounter integration for consumption tracking, throttling, and audit | 
+| Async Architecture | Fully asynchronous I/O operations with backpressure resilience | 
+| CLI & Frontend Support | Chat-style CLI + React-compatible frontend integration | 
 
-##  Key Modules  
-- `task_router.py`: Assigns simulation logic based on fairness constraints  
-- `settings.py`: Manages global parameters and runtime configurations  
-- `simulator_core.py`: Core simulation engine for modeling educational inequalities  
-- `ai_engine.py`: Adaptive scoring and decision logic module  
-- `fairness_metrics.py`: Calculates equity ratios (Gini, access levels, etc.)  
-- `report_generator.py`: Generates visual and text-based simulation reports
+
+
+📁 File Structure (Highlights)
+📦 src/
+ ┣ main.py                 – Entry point (async CLI orchestrator)
+ ┣ memory_manager.py       – Adaptive memory storage + Redis readiness
+ ┣ token_counter.py        – Token-aware estimation and budgeting
+ ┣ auth_routes.py          – JWT endpoints (login, register, verify)
+ ┣ chat_client.py          – OpenAI API wrapper with retry/fallback logic
+ ┣ orchestrator.py         – Session-state routing and decision policies
+ ┣ settings.py             – Global model parameters and attention control
+ ┗ fairness_metrics.py     – Equity scoring logic (Gini, access levels)
+
+
+
+🧪 Example Session
+$ python main.py
+🧠 PioneerAI v2.0 initialized – Secure async architecture active!
+💬 You: !stats
+📊 Session Stats:
+• Messages: 36
+• Uptime: 21.8 minutes
+• Memory: Active
+
+
+
+⚙️ ENV Configuration (.env.safe)
+OPENAI_MODEL=gpt-4o
+SYSTEM_PROMPT="You are PioneerChat, a thoughtful and ethical assistant."
+MAX_TOKENS=500
+SESSION_TIMEOUT=300
+MEMORY_JSON=memory.json
+ATTENTION_MODE=hybrid
+CACHE_SIZE=1000
+
+
+
+🔐 Security Overview
+- ✅ Bcrypt password hashing + JWT (24h token expiry)
+- ✅ CORS support + Turkish error messages
+- ✅ Protected chat endpoints (/ask/summary, /userinfo)
+- ✅ Input validation (email, username, token integrity)
+
+📬 Collaboration
+This project welcomes feedback, feature requests, and research partnerships.
+Maintainer: Furkan
+📧 pioneerai.code@gmail.com
+📱 +90 541 718 07 66
 
 ##  Development Status  
 PioneerAI is in active development. While all core modules are functional, model training and full-scale analytics pipelines are evolving. Feedback and contributions are welcome.
@@ -20,73 +69,7 @@ PioneerAI is in active development. While all core modules are functional, model
 Python 3.10+  
 Libraries: NumPy, Pandas, Matplotlib, Scikit-learn (see `requirements.txt`)
 
-##  License  
-MIT License. See the [LICENSE](./LICENSE) file for details.
-
-##  Contact & Contributions  
-Feel free to suggest improvements via Issues or submit PRs.  
-Developed by Furkan | Connect via: pioneerai.code@gmail.com |  +90 541 718 07 66
-# System Architecture
-PioneerAI/
-├── main.py                     ← GPT call handler and core intelligence module
-├── app.py                      ← Advanced FastAPI server (sync + async capable)
-│
-├── pioneerchat/                ← AI engine and context management layer
-│   ├── __init__.py
-│   ├── orchestrator.py         ← Task dispatching and intent classification
-│   ├── async_bridge.py         ← Streaming GPT connector
-│   ├── conversation_engine.py  ← Dialogue flow controller + context organization
-│   ├── memory_manager.py       ← Read/write memory ops (json/txt/db support)
-│   ├── memory_analyzer.py      ← Memory analysis + tone, intent + GPT summarization ✅
-│   ├── get_context.py          ← Generates context inputs from memory for GPT 🆕
-│   ├── agent_router.py         ← intent → custom module routing logic 🆕
-│   ├── daily_summary.py        ← Daily conversation summarizer & archiver 🆕
-│   └── task_router.py          ← Task classification via intent
-│
-├── config/
-│   ├── settings.py             ← Environment configuration (.env support)
-│   ├── .env                    ← API keys, model setup parameters
-│   ├── constants.py            ← Versioning, limits, global constants
-│   └── colors.py               ← Log coloring helper (optional)
-│
-├── web/                        ← Web-based user interface
-│   ├── index.html              ← Main landing page
-│   ├── app.js                  ← JS-based chat event handler
-│   ├── style.css               ← Stylesheet
-│   ├── memory.js               ← localStorage-based memory tracker
-│   ├── intent.js               ← Conditional intent visualizer (optional)
-│   └── dashboard.html          ← Memory analyzer + GPT summary dashboard 🆕
-│
-├── api/                        ← REST API layer
-│   ├── __init__.py
-│   ├── v1/
-│   │   └── routes.py           ← /ask, /analyze, /context-info, /health endpoints 🆕
-│   └── utils.py                ← Token counter, JSON helper, error handler 🆕
-│
-├── memory/
-│   ├── memory.json             ← Persistent conversational memory
-│   ├── conversation_memory.txt ← Text transcript of interactions
-│   ├── summary_YYYYMMDD.json   ← Daily summary records 🆕
-│   └── user_context_cache.json ← Cached output from get_context() 🆕
-│
-├── logs/
-│   ├── pioneer.log             ← General conversational logs
-│   ├── performance.log         ← Response timing, token metrics
-│   ├── error.log               ← Exceptions and error tracking
-│   └── summary.log             ← Daily GPT summarization tracking 🆕
-│
-├── tests/
-│   ├── env_check.py
-│   ├── version_check.py
-│   ├── api_test.py             ← Endpoint tests for /ask and /analyze
-│   └── memory_test.py          ← Tests for memoryAnalyzer and context generator 🆕
-│
-├── static/                     ← Visual assets and uploads
-│   └── assets/
-│       ├── logo.png
-│       └── background.jpg
-│
-├── requirements.txt            ← Project dependencies
-├── README.md                   ← Overview and setup instructions for the user.
+##License
+Don't forget to check out the MIT License.
 
 
